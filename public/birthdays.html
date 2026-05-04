@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дни рождения</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4 shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="bi bi-journal-text me-2"></i>Отдел главного энергетика</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="/journal.html"><i
+                                class="bi bi-journal-bookmark-fill me-1"></i>Оперативный журнал</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/vacation.html"><i
+                                class="bi bi-calendar-heart me-1"></i>График отпусков</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/birthdays.html"><i
+                                class="bi bi-gift me-1"></i>Дни рождения</a></li>
+                </ul>
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <span class="nav-link text-white">
+                            <i class="bi bi-person-badge me-1"></i>
+                            Текущий дежурный: <strong id="currentStaffDisplay">Загрузка...</strong>
+                        </span>
+                    </li>
+                    <li class="nav-item ms-2">
+                        <button class="btn btn-outline-light btn-sm" id="clearAllBtn">
+                            <i class="bi bi-trash me-1"></i>Очистить журнал
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-2">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                        <h2 class="h4 mb-1"><i class="bi bi-gift me-2" style="color: var(--corporate-teal);"></i>Дни
+                            рождения сотрудников</h2>
+                        <p class="text-muted mb-0 small">Управление днями рождения персонала</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm" style="background-color: var(--corporate-teal); color: white;"
+                            id="addBirthdayBtn"><i class="bi bi-plus-circle me-1"></i>Добавить сотрудника</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm border-0" id="nextBirthdayCard"
+                    style="background: linear-gradient(135deg, var(--corporate-teal-light) 0%, white 100%);">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0 me-4"><i class="bi bi-calendar-heart fs-1"
+                                    style="color: var(--corporate-teal);"></i></div>
+                            <div class="flex-grow-1">
+                                <h5 class="mb-2">🎉 Ближайший день рождения</h5>
+                                <div id="nextBirthdayInfo" class="d-flex align-items-center gap-3 flex-wrap"><span
+                                        class="fw-bold fs-5">Загрузка...</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex gap-2 flex-wrap" id="monthFilters"><button class="btn btn-sm month-filter active"
+                        data-month="all" style="background-color: var(--corporate-teal); color: white;">Весь
+                        год</button><button class="btn btn-sm btn-outline-secondary month-filter"
+                        data-month="1">Янв</button><button class="btn btn-sm btn-outline-secondary month-filter"
+                        data-month="2">Фев</button><button class="btn btn-sm btn-outline-secondary month-filter"
+                        data-month="3">Мар</button><button class="btn btn-sm btn-outline-secondary month-filter"
+                        data-month="4">Апр</button><button class="btn btn-sm btn-outline-secondary month-filter"
+                        data-month="5">Май</button><button class="btn btn-sm btn-outline-secondary month-filter"
+                        data-month="6">Июн</button><button class="btn btn-sm btn-outline-secondary month-filter"
+                        data-month="7">Июл</button><button class="btn btn-sm btn-outline-secondary month-filter"
+                        data-month="8">Авг</button><button class="btn btn-sm btn-outline-secondary month-filter"
+                        data-month="9">Сен</button><button class="btn btn-sm btn-outline-secondary month-filter"
+                        data-month="10">Окт</button><button class="btn btn-sm btn-outline-secondary month-filter"
+                        data-month="11">Ноя</button><button class="btn btn-sm btn-outline-secondary month-filter"
+                        data-month="12">Дек</button></div>
+            </div>
+        </div>
+
+        <div class="row" id="birthdaysList">
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Загрузка...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="alert alert-info d-flex align-items-center"
+                    style="background-color: var(--corporate-teal-light); border-color: var(--corporate-teal);"><i
+                        class="bi bi-info-circle-fill me-2" style="color: var(--corporate-teal);"></i>
+                    <div><strong>Как управлять днями рождения:</strong> Нажмите "Добавить сотрудника" для добавления
+                        нового. Сотрудники автоматически сортируются по дате рождения. Ближайший день рождения
+                        выделяется отдельно.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для добавления сотрудника -->
+    <div class="modal fade" id="birthdayModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: var(--corporate-teal); color: white;">
+                    <h5 class="modal-title"><i class="bi bi-gift me-2"></i>Добавить сотрудника</h5><button type="button"
+                        class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="birthdayForm">
+                        <div class="mb-3"><label class="form-label">ФИО сотрудника</label><input type="text"
+                                class="form-control" id="birthdayName" placeholder="Иванов Иван Иванович" required>
+                        </div>
+                        <div class="mb-3"><label class="form-label">Дата рождения</label><input type="date"
+                                class="form-control" id="birthdayDate" required></div>
+                        <div class="mb-3"><label class="form-label">Должность</label><input type="text"
+                                class="form-control" id="birthdayPosition" placeholder="Оперативный персонал"></div>
+                        <div class="mb-3"><label class="form-label">Отдел</label><input type="text" class="form-control"
+                                id="birthdayDepartment" placeholder="Диспетчерская"></div>
+                    </form>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal">Отмена</button><button type="button" class="btn" id="saveBirthdayBtn"
+                        style="background-color: var(--corporate-teal); color: white;">Сохранить</button></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для подтверждения удаления -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Подтверждение удаления</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Вы уверены, что хотите удалить сотрудника <span id="deleteStaffName"></span>?</p>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal">Отмена</button><button type="button" class="btn btn-danger"
+                        id="confirmDeleteBtn">Удалить</button></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/birthdays.js"></script>
+</body>
+
+</html>

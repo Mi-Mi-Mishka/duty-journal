@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ОГЭ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4 shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <i class="bi bi-journal-text me-2"></i>
+            Отдел главного энергетика
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item"><a class="nav-link" href="/journal.html"><i class="bi bi-journal-bookmark-fill me-1"></i>Оперативный журнал</a></li>
+                <li class="nav-item"><a class="nav-link" href="/vacation.html"><i class="bi bi-calendar-heart me-1"></i>График отпусков</a></li>
+                <li class="nav-item"><a class="nav-link" href="/birthdays.html"><i class="bi bi-gift me-1"></i>Дни рождения</a></li>
+            </ul>
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle text-white" href="#" id="staffDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle me-1"></i>
+                        <span id="currentStaffDisplay">Загрузка...</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" id="staffList">
+                        <li><h6 class="dropdown-header">Дежурный персонал</h6></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#">Загрузка...</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="vacation-placeholder">
+                <i class="bi bi-house-door fs-1" style="color: var(--corporate-teal);"></i>
+                <h2 class="mt-3">Добро пожаловать!</h2>
+                <p class="text-muted lead mb-4">Общий доступ к журналу дежурного персонала</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="/journal.html" class="btn btn-primary btn-lg">📖 Оперативный журнал</a>
+                    <a href="/vacation.html" class="btn btn-success btn-lg">🏖️ График отпусков</a>
+                    <a href="/birthdays.html" class="btn btn-info btn-lg text-white">🎂 Дни рождения</a>
+                </div>
+                <p class="text-muted mt-4"><small>Все данные хранятся на сервере и доступны всем пользователям</small></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

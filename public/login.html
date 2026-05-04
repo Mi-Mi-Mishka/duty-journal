@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход в систему</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --corporate-red: rgb(184, 5, 45);
+            --corporate-teal: rgb(0, 140, 140);
+        }
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 450px;
+        }
+        .login-header {
+            background: var(--corporate-red);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .login-body {
+            padding: 2rem;
+        }
+        .btn-login {
+            background-color: var(--corporate-teal);
+            border: none;
+            width: 100%;
+            padding: 0.75rem;
+            font-weight: 600;
+        }
+        .btn-login:hover {
+            background-color: rgb(0, 105, 105);
+        }
+        .shift-staff-select {
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="login-header">
+            <i class="bi bi-journal-text fs-1"></i>
+            <h3 class="mt-2">Журнал дежурного персонала</h3>
+            <p class="mb-0 opacity-75">Вход в систему</p>
+        </div>
+        <div class="login-body">
+            <div id="errorMsg" class="alert alert-danger d-none"></div>
+            
+            <div class="mb-3">
+                <label class="form-label">Логин</label>
+                <input type="text" class="form-control" id="username" placeholder="Введите логин">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Пароль</label>
+                <input type="password" class="form-control" id="password" placeholder="Введите пароль">
+            </div>
+            
+            <div id="shiftStaffBlock" style="display: none;">
+                <div class="mb-3 shift-staff-select">
+                    <label class="form-label">Выберите сменного сотрудника:</label>
+                    <select class="form-select" id="shiftStaffSelect">
+                        <option value="">-- Выберите --</option>
+                    </select>
+                    <div class="form-text text-muted mt-2">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Вы работаете под общей учётной записью. Выберите, кто сейчас на смене.
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn btn-login text-white" id="loginBtn">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Войти
+            </button>
+            
+            <hr class="my-4">
+            
+            <div class="text-center">
+                <small class="text-muted">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Администраторы: Главный инженер, Главный энергетик, Ведущий инженер, Мастер
+                </small>
+                <div class="row mt-2 small text-start">
+                    <div class="col-6">chief_engineer / eng123</div>
+                    <div class="col-6">power_engineer / power123</div>
+                    <div class="col-6">lead_engineer / lead123</div>
+                    <div class="col-6">master / master123</div>
+                    <div class="col-12 text-center mt-2">
+                        <hr>
+                        <strong>Оператор:</strong> operator / operator123
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const loginBtn = document.getElementById('loginBtn');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const errorMsg = document.getElementById('errorMsg');
+        const shiftStaffBlock = document.getElementById('shiftStaffBlock');
+        const shiftStaffSelect = document.getElementById('shiftStaffSelect');
+        
+        // Список сменных сотрудников
+        async function loadShiftStaff() {
+            try {
+                const response = await fetch('/api/shift-staff');
+                const staff = await response.json();
+                shiftStaffSelect.innerHTML = '<option value="">-- Выберите --</option>' + 
+                    staff.map(s => `<option value="${s.id}">${s.name} (${s.shift_name})</option>`).join('');
+            } catch (error) {
+                console.error('Ошибка загрузки:', error);
+            }
+        }
+        
+        usernameInput.addEventListener('input', () => {
+            if (usernameInput.value === 'operator') {
+                shiftStaffBlock.style.display = 'block';
+                loadShiftStaff();
+            } else {
+                shiftStaffBlock.style.display = 'none';
+            }
+        });
+        
+        async function login() {
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value;
+            
+            if (!username || !password) {
+                errorMsg.textContent = 'Введите логин и пароль';
+                errorMsg.classList.remove('d-none');
+                return;
+            }
+            
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Вход...';
+            
+            const body = { username, password };
+            if (username === 'operator') {
+                const staffId = shiftStaffSelect.value;
+                if (!staffId) {
+                    errorMsg.textContent = 'Выберите сменного сотрудника';
+                    errorMsg.classList.remove('d-none');
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i>Войти';
+                    return;
+                }
+                body.shiftStaffId = staffId;
+            }
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    window.location.href = '/';
+                } else if (data.needShiftStaff) {
+                    errorMsg.textContent = 'Выберите сменного сотрудника';
+                    errorMsg.classList.remove('d-none');
+                    shiftStaffBlock.style.display = 'block';
+                    loadShiftStaff();
+                } else {
+                    errorMsg.textContent = data.error || 'Ошибка входа';
+                    errorMsg.classList.remove('d-none');
+                }
+            } catch (error) {
+                errorMsg.textContent = 'Ошибка соединения с сервером';
+                errorMsg.classList.remove('d-none');
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i>Войти';
+            }
+        }
+        
+        loginBtn.addEventListener('click', login);
+        usernameInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') login(); });
+        passwordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') login(); });
+        
+        if (localStorage.getItem('token')) {
+            window.location.href = '/';
+        }
+    </script>
+</body>
+</html>
