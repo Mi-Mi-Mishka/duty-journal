@@ -129,11 +129,11 @@ async function initDatabase() {
     
     // Создаём сменный персонал
     const shiftStaffList = [
-        { name: 'Иванов Иван', shift_name: 'Смена А' },
-        { name: 'Петров Петр', shift_name: 'Смена Б' },
-        { name: 'Сидоров Сидор', shift_name: 'Смена В' },
-        { name: 'Смирнова Анна', shift_name: 'Смена Г' },
-        { name: 'Козлов Дмитрий', shift_name: 'Смена Д' }
+        { id: 1, name: 'Попов М.С.', shift_name: 'Смена 1' },
+        { id: 2, name: 'Седько А.В.', shift_name: 'Смена 2' },
+        { id: 3, name: 'Мишурняев Д.С.', shift_name: 'Смена 3' },
+        { id: 4, name: 'Репкин В.А.', shift_name: 'Смена 4' },
+        { id: 5, name: 'Атаманов В.Г.', shift_name: 'Подменный' }
     ];
     
     for (const staff of shiftStaffList) {
