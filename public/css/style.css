@@ -7,13 +7,23 @@
     --corporate-teal-dark: rgb(0, 105, 105);
 }
 
+/* Отключаем горизонтальную прокрутку на всех экранах */
 body {
     overflow-x: hidden;
     width: 100%;
     max-width: 100%;
 }
-.container, .row, .col-* {
+
+/* Контейнеры не должны выходить за пределы экрана */
+.container,
+.row,
+.col-* {
     max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* Специально для главной страницы */
+.vacation-placeholder {
     overflow-x: hidden;
 }
 
