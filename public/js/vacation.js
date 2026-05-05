@@ -291,14 +291,22 @@
         }
     }
     
-    function hideEditButtons() {
-        if (!canEdit) {
-            const clearBtn = document.getElementById('clearVacationsBtn');
-            const addBtn = document.getElementById('addVacationBtn');
-            if (clearBtn) clearBtn.style.display = 'none';
-            if (addBtn) addBtn.style.display = 'none';
-        }
+function hideEditButtons() {
+    // Актуально получаем пользователя каждый раз
+    const currentUser = window.auth?.user;
+    const canEdit = currentUser?.role === 'master';
+    
+    const clearBtn = document.getElementById('clearVacationsBtn');
+    const addBtn = document.getElementById('addVacationBtn');
+    
+    if (!canEdit) {
+        if (clearBtn) clearBtn.style.display = 'none';
+        if (addBtn) addBtn.style.display = 'none';
+    } else {
+        if (clearBtn) clearBtn.style.display = 'block';
+        if (addBtn) addBtn.style.display = 'block';
     }
+}
     
     document.addEventListener('DOMContentLoaded', async () => {
         if (!document.getElementById('timelineBody')) return;
@@ -364,5 +372,12 @@
             document.getElementById('addVacationBtn')?.addEventListener('click', () => openVacationModal());
             document.getElementById('saveVacationBtn')?.addEventListener('click', saveVacation);
         }
+        window.addEventListener('pageshow', function() {
+    // При возврате на страницу (например, из истории) обновляем права
+    hideEditButtons();
+    // Также можно обновить статистику и таблицу, если нужно
+    updateVacationStats();
+    renderTimeline();
+});
     });
 })();
