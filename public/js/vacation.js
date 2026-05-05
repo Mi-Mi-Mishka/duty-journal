@@ -9,6 +9,7 @@
     { id: 5, name: 'Попов Михаил', initials: 'ПМ', department: 'Инженер-энергетик' },
     { id: 6, name: 'Седько Александр', initials: 'СА', department: 'Инженер-энергетик' },
     { id: 7, name: 'Репкин Владимир', initials: 'РВ', department: 'Инженер-энергетик' },
+    { id: 7, name: 'Атаманов Максим', initials: 'АМ', department: 'Инженер-энергетик' },
     { id: 8, name: 'Харченко Николай', initials: 'ХН', department: 'Слесарь-электрик' },
     { id: 9, name: 'Мукосеев Евгений', initials: 'МЕ', department: 'Слесарь-электрик' },
     { id: 10, name: 'Варнавский Иван', initials: 'ВИ', department: 'Слесарь-электрик' }
