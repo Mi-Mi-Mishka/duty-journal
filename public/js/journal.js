@@ -163,6 +163,7 @@ function updateButtonsVisibility() {
     if (readings.lvsr2) lvsrReadings.push(`LVSR2 - ${readings.lvsr2}°C`);
     if (readings.lvsr3) lvsrReadings.push(`LVSR3 - ${readings.lvsr3}°C`);
     if (readings.lvsr4) lvsrReadings.push(`LVSR4 - ${readings.lvsr4}°C`);
+    if (readings.debTemp) result.push(`🏭 ДЭБ: ${readings.debTemp}°C`);
     if (readings.lvsr5) lvsrReadings.push(`LVSR5 - ${readings.lvsr5}°C`);
     if (lvsrReadings.length)
       result.push(`Температуры LVSR: ${lvsrReadings.join(", ")}`);
@@ -310,6 +311,7 @@ function updateButtonsVisibility() {
       lvsr2: document.getElementById("lvsr2").value,
       lvsr3: document.getElementById("lvsr3").value,
       lvsr4: document.getElementById("lvsr4").value,
+      debTemp: document.getElementById('debTemp').value,
       lvsr5: document.getElementById("lvsr5").value,
       otTemp: document.getElementById("otTemp").value,
       gvsTemp: document.getElementById("gvsTemp").value,
