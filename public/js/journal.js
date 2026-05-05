@@ -163,7 +163,7 @@ function updateButtonsVisibility() {
     if (readings.lvsr2) lvsrReadings.push(`LVSR2 - ${readings.lvsr2}°C`);
     if (readings.lvsr3) lvsrReadings.push(`LVSR3 - ${readings.lvsr3}°C`);
     if (readings.lvsr4) lvsrReadings.push(`LVSR4 - ${readings.lvsr4}°C`);
-    if (readings.debTemp) result.push(`🏭 ДЭБ: ${readings.debTemp}°C`);
+    if (readings.debTemp) result.push(`🏭 ДЭП: ${readings.debTemp}°C`);
     if (readings.lvsr5) lvsrReadings.push(`LVSR5 - ${readings.lvsr5}°C`);
     if (lvsrReadings.length)
       result.push(`Температуры LVSR: ${lvsrReadings.join(", ")}`);
