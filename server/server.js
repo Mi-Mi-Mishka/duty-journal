@@ -352,6 +352,10 @@ app.get('/api/users', async (req, res) => {
     res.json(result.rows);
 });
 
+app.get('/ping', (req, res) => {
+    res.status(200).send('ok');
+});
+
 // ========== ЗАПУСК ==========
 initDatabase().then(() => {
     app.listen(PORT, HOST, () => {
