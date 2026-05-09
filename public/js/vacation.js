@@ -316,70 +316,91 @@ function hideEditButtons() {
     }
 }
     
-    document.addEventListener('DOMContentLoaded', async () => {
-        if (!document.getElementById('timelineBody')) return;
-        
-        await loadStaffSelect();
-        await renderTimeline();
-        await updateVacationStats();
-        hideEditButtons();
-        
-        document.getElementById('prevYearBtn')?.addEventListener('click', async () => {
-            currentYear--;
-            if (currentView === 'timeline') {
-                await renderTimeline();
-                await updateVacationStats();
-            } else {
-                const month = parseInt(document.getElementById('calendarMonth').value);
-                await renderCalendar(currentYear, month);
-            }
-        });
-        
-        document.getElementById('nextYearBtn')?.addEventListener('click', async () => {
-            currentYear++;
-            if (currentView === 'timeline') {
-                await renderTimeline();
-                await updateVacationStats();
-            } else {
-                const month = parseInt(document.getElementById('calendarMonth').value);
-                await renderCalendar(currentYear, month);
-            }
-        });
-        
-        document.getElementById('viewTimelineBtn')?.addEventListener('click', showTimeline);
-        document.getElementById('viewCalendarBtn')?.addEventListener('click', () => {
-            const now = new Date();
-            showCalendarForMonth(currentYear, now.getMonth());
-        });
-        document.getElementById('backToTimelineBtn')?.addEventListener('click', showTimeline);
-        
-        document.getElementById('calendarMonth')?.addEventListener('change', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    if (!document.getElementById('timelineBody')) return;
+    
+    // Загружаем данные
+    await loadStaffSelect();
+    await renderTimeline();
+    await updateVacationStats();
+    
+    // Определяем права доступа (мастер или админ могут редактировать)
+    const currentUser = window.auth?.user;
+    const canEdit = currentUser?.role === 'master' || currentUser?.role === 'admin';
+    
+    // ========== КНОПКИ РЕДАКТИРОВАНИЯ (показываем/скрываем) ==========
+    const clearBtn = document.getElementById('clearVacationsBtn');
+    const addBtn = document.getElementById('addVacationBtn');
+    
+    if (!canEdit) {
+        if (clearBtn) clearBtn.style.display = 'none';
+        if (addBtn) addBtn.style.display = 'none';
+    } else {
+        if (clearBtn) clearBtn.style.display = 'block';
+        if (addBtn) addBtn.style.display = 'block';
+    }
+    
+    // ========== НАВИГАЦИЯ ПО ГОДАМ ==========
+    document.getElementById('prevYearBtn')?.addEventListener('click', async () => {
+        currentYear--;
+        if (currentView === 'timeline') {
+            await renderTimeline();
+            await updateVacationStats();
+        } else {
             const month = parseInt(document.getElementById('calendarMonth').value);
-            renderCalendar(currentYear, month);
-        });
-        document.getElementById('calendarYear')?.addEventListener('change', () => {
-            currentYear = parseInt(document.getElementById('calendarYear').value);
-            const month = parseInt(document.getElementById('calendarMonth').value);
-            renderCalendar(currentYear, month);
-        });
-        document.getElementById('todayBtn')?.addEventListener('click', () => {
-            const today = new Date();
-            currentYear = today.getFullYear();
-            showCalendarForMonth(currentYear, today.getMonth());
-        });
-        
-        document.querySelectorAll('.month-header').forEach(header => {
-            header.addEventListener('click', () => {
-                const month = parseInt(header.dataset.month);
-                showCalendarForMonth(currentYear, month);
-            });
-        });
-        
-        if (canEdit) {
-            document.getElementById('clearVacationsBtn')?.addEventListener('click', clearAllVacations);
-            document.getElementById('addVacationBtn')?.addEventListener('click', () => openVacationModal());
-            document.getElementById('saveVacationBtn')?.addEventListener('click', saveVacation);
+            await renderCalendar(currentYear, month);
         }
+    });
+    
+    document.getElementById('nextYearBtn')?.addEventListener('click', async () => {
+        currentYear++;
+        if (currentView === 'timeline') {
+            await renderTimeline();
+            await updateVacationStats();
+        } else {
+            const month = parseInt(document.getElementById('calendarMonth').value);
+            await renderCalendar(currentYear, month);
+        }
+    });
+    
+    // ========== ПЕРЕКЛЮЧЕНИЕ ВИДОВ ==========
+    document.getElementById('viewTimelineBtn')?.addEventListener('click', showTimeline);
+    document.getElementById('viewCalendarBtn')?.addEventListener('click', () => {
+        const now = new Date();
+        showCalendarForMonth(currentYear, now.getMonth());
+    });
+    document.getElementById('backToTimelineBtn')?.addEventListener('click', showTimeline);
+    
+    // ========== КАЛЕНДАРЬ ==========
+    document.getElementById('calendarMonth')?.addEventListener('change', () => {
+        const month = parseInt(document.getElementById('calendarMonth').value);
+        renderCalendar(currentYear, month);
+    });
+    document.getElementById('calendarYear')?.addEventListener('change', () => {
+        currentYear = parseInt(document.getElementById('calendarYear').value);
+        const month = parseInt(document.getElementById('calendarMonth').value);
+        renderCalendar(currentYear, month);
+    });
+    document.getElementById('todayBtn')?.addEventListener('click', () => {
+        const today = new Date();
+        currentYear = today.getFullYear();
+        showCalendarForMonth(currentYear, today.getMonth());
+    });
+    
+    // ========== КЛИК НА ЗАГОЛОВКИ МЕСЯЦЕВ ==========
+    document.querySelectorAll('.month-header').forEach(header => {
+        header.addEventListener('click', () => {
+            const month = parseInt(header.dataset.month);
+            showCalendarForMonth(currentYear, month);
+        });
+    });
+    
+    // ========== КНОПКИ РЕДАКТИРОВАНИЯ (ДОБАВЛЯЕМ ОБРАБОТЧИКИ ТОЛЬКО ДЛЯ МАСТЕРА/АДМИНА) ==========
+    if (canEdit) {
+        document.getElementById('clearVacationsBtn')?.addEventListener('click', clearAllVacations);
+        document.getElementById('addVacationBtn')?.addEventListener('click', () => openVacationModal());
+        document.getElementById('saveVacationBtn')?.addEventListener('click', saveVacation);
+    }
         window.addEventListener('pageshow', function() {
     // При возврате на страницу (например, из истории) обновляем права
     hideEditButtons();
