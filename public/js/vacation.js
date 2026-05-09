@@ -213,27 +213,27 @@
         renderTimeline();
     }
     
-    async function clearAllVacations() {
-        if (!canEdit) {
-            alert('У вас нет прав на удаление отпусков');
-            return;
-        }
-        if (confirm('Вы уверены, что хотите удалить ВСЕ отпуска? Это действие нельзя отменить.')) {
-            const vacations = await apiGetVacations();
-            for (let v of vacations) {
-                await apiDeleteVacation(v.id);
-            }
-            await renderTimeline();
-            await updateVacationStats();
-            window.showNotification('Все отпуска удалены', 'success');
-        }
+async function clearAllVacations() {
+    const currentUser = window.auth?.user;
+    const canEdit = currentUser?.role === 'master' || currentUser?.role === 'admin';
+    
+    if (!canEdit) {
+        alert('У вас нет прав на удаление отпусков');
+        return;
     }
     
-    function openVacationModal(staffId = null) {
-            console.log('openVacationModal вызвана');
-    console.log('window.auth.user:', window.auth?.user);
-    console.log('role:', window.auth?.user?.role);
-    // Актуально получаем пользователя
+    if (confirm('Вы уверены, что хотите удалить ВСЕ отпуска? Это действие нельзя отменить.')) {
+        const vacations = await apiGetVacations();
+        for (let v of vacations) {
+            await apiDeleteVacation(v.id);
+        }
+        await renderTimeline();
+        await updateVacationStats();
+        window.showNotification('Все отпуска удалены', 'success');
+    }
+}
+    
+function openVacationModal(staffId = null) {
     const currentUser = window.auth?.user;
     const canEdit = currentUser?.role === 'master' || currentUser?.role === 'admin';
     
@@ -254,42 +254,46 @@
     modal.show();
 }
     
-    async function saveVacation() {
-        if (!canEdit) {
-            alert('У вас нет прав на добавление отпусков');
-            return;
-        }
-        const staffId = document.getElementById('vacationStaff').value;
-        const type = document.getElementById('vacationType').value;
-        const start = document.getElementById('vacationStart').value;
-        const end = document.getElementById('vacationEnd').value;
-        const comment = document.getElementById('vacationComment').value;
-        
-        if (!staffId || !start || !end) {
-            alert('Заполните все обязательные поля');
-            return;
-        }
-        
-        if (new Date(end) < new Date(start)) {
-            alert('Дата окончания не может быть раньше даты начала');
-            return;
-        }
-        
-        await apiAddVacation({
-            id: Date.now() + Math.random().toString(36).substr(2, 9),
-            staffId: parseInt(staffId),
-            type: type,
-            start: start,
-            end: end,
-            comment: comment || null
-        });
-        
-        await renderTimeline();
-        await updateVacationStats();
-        bootstrap.Modal.getInstance(document.getElementById('vacationModal')).hide();
-        document.getElementById('vacationForm').reset();
-        window.showNotification('Отпуск добавлен', 'success');
+async function saveVacation() {
+    const currentUser = window.auth?.user;
+    const canEdit = currentUser?.role === 'master' || currentUser?.role === 'admin';
+    
+    if (!canEdit) {
+        alert('У вас нет прав на добавление отпусков');
+        return;
     }
+    
+    const staffId = document.getElementById('vacationStaff').value;
+    const type = document.getElementById('vacationType').value;
+    const start = document.getElementById('vacationStart').value;
+    const end = document.getElementById('vacationEnd').value;
+    const comment = document.getElementById('vacationComment').value;
+    
+    if (!staffId || !start || !end) {
+        alert('Заполните все обязательные поля');
+        return;
+    }
+    
+    if (new Date(end) < new Date(start)) {
+        alert('Дата окончания не может быть раньше даты начала');
+        return;
+    }
+    
+    await apiAddVacation({
+        id: Date.now() + Math.random().toString(36).substr(2, 9),
+        staffId: parseInt(staffId),
+        type: type,
+        start: start,
+        end: end,
+        comment: comment || null
+    });
+    
+    await renderTimeline();
+    await updateVacationStats();
+    bootstrap.Modal.getInstance(document.getElementById('vacationModal')).hide();
+    document.getElementById('vacationForm').reset();
+    window.showNotification('Отпуск добавлен', 'success');
+}
     
     async function loadStaffSelect() {
         const select = document.getElementById('vacationStaff');
