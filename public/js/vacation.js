@@ -230,6 +230,9 @@
     }
     
     function openVacationModal(staffId = null) {
+            console.log('openVacationModal вызвана');
+    console.log('window.auth.user:', window.auth?.user);
+    console.log('role:', window.auth?.user?.role);
     // Актуально получаем пользователя
     const currentUser = window.auth?.user;
     const canEdit = currentUser?.role === 'master' || currentUser?.role === 'admin';
