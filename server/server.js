@@ -179,7 +179,8 @@ function canWriteJournal(req, res, next) {
 
 // Права на редактирование отпусков (только мастер)
 function canEditVacations(req, res, next) {
-    if (req.user.role !== 'master') {
+    // Разрешаем мастерам и админам
+    if (req.user.role !== 'master' && req.user.role !== 'admin') {
         return res.status(403).json({ error: 'Доступ запрещён. Только мастер может редактировать отпуска.' });
     }
     next();
