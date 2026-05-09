@@ -186,36 +186,56 @@
         window.showNotification('Сотрудник добавлен', 'success');
     }
     
-    function hideAddButton() {
-        if (!canEdit) {
-            const addBtn = document.getElementById('addBirthdayBtn');
-            if (addBtn) addBtn.style.display = 'none';
-        }
+function hideAddButton() {
+    const currentUser = window.auth?.user;
+    const canEdit = currentUser?.role === 'master' || currentUser?.role === 'admin';
+    
+    const addBtn = document.getElementById('addBirthdayBtn');
+    if (!canEdit) {
+        if (addBtn) addBtn.style.display = 'none';
+    } else {
+        if (addBtn) addBtn.style.display = 'block';
     }
+}
     
     document.addEventListener('DOMContentLoaded', async () => {
-        if (!document.getElementById('birthdaysList')) return;
-        
-        await renderBirthdaysList();
-        hideAddButton();
-        
-        document.querySelectorAll('.month-filter').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.month-filter').forEach(b => {
-                    b.classList.remove('active');
-                    b.style.backgroundColor = '';
-                    b.style.color = '';
-                });
-                this.classList.add('active');
-                this.style.backgroundColor = 'var(--corporate-teal)';
-                this.style.color = 'white';
-                renderBirthdaysList(this.getAttribute('data-month'));
+    if (!document.getElementById('birthdaysList')) return;
+    
+    // Загружаем данные
+    await renderBirthdaysList();
+    
+    // Определяем права доступа (мастер или админ могут редактировать)
+    const currentUser = window.auth?.user;
+    const canEdit = currentUser?.role === 'master' || currentUser?.role === 'admin';
+    
+    // ========== КНОПКИ РЕДАКТИРОВАНИЯ (показываем/скрываем) ==========
+    const addBtn = document.getElementById('addBirthdayBtn');
+    
+    if (!canEdit) {
+        if (addBtn) addBtn.style.display = 'none';
+    } else {
+        if (addBtn) addBtn.style.display = 'block';
+    }
+    
+    // ========== ФИЛЬТРЫ ПО МЕСЯЦАМ ==========
+    document.querySelectorAll('.month-filter').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.month-filter').forEach(b => {
+                b.classList.remove('active');
+                b.style.backgroundColor = '';
+                b.style.color = '';
             });
+            this.classList.add('active');
+            this.style.backgroundColor = 'var(--corporate-teal)';
+            this.style.color = 'white';
+            renderBirthdaysList(this.getAttribute('data-month'));
         });
-        
-        if (canEdit) {
-            document.getElementById('addBirthdayBtn')?.addEventListener('click', openBirthdayModal);
-            document.getElementById('saveBirthdayBtn')?.addEventListener('click', saveBirthday);
-        }
+    });
+    
+    // ========== КНОПКИ РЕДАКТИРОВАНИЯ (ДОБАВЛЯЕМ ОБРАБОТЧИКИ ТОЛЬКО ДЛЯ МАСТЕРА/АДМИНА) ==========
+    if (canEdit) {
+        document.getElementById('addBirthdayBtn')?.addEventListener('click', openBirthdayModal);
+        document.getElementById('saveBirthdayBtn')?.addEventListener('click', saveBirthday);
+    }
     });
 })();
