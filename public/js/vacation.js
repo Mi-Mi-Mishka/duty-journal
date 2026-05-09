@@ -230,21 +230,26 @@
     }
     
     function openVacationModal(staffId = null) {
-        if (!canEdit) {
-            alert('У вас нет прав на добавление отпусков');
-            return;
-        }
-        const modal = new bootstrap.Modal(document.getElementById('vacationModal'));
-        if (staffId) document.getElementById('vacationStaff').value = staffId;
-        
-        const today = new Date();
-        const nextWeek = new Date(today);
-        nextWeek.setDate(today.getDate() + 14);
-        
-        document.getElementById('vacationStart').value = today.toISOString().split('T')[0];
-        document.getElementById('vacationEnd').value = nextWeek.toISOString().split('T')[0];
-        modal.show();
+    // Актуально получаем пользователя
+    const currentUser = window.auth?.user;
+    const canEdit = currentUser?.role === 'master' || currentUser?.role === 'admin';
+    
+    if (!canEdit) {
+        alert('У вас нет прав на добавление отпусков');
+        return;
     }
+    
+    const modal = new bootstrap.Modal(document.getElementById('vacationModal'));
+    if (staffId) document.getElementById('vacationStaff').value = staffId;
+    
+    const today = new Date();
+    const nextWeek = new Date(today);
+    nextWeek.setDate(today.getDate() + 14);
+    
+    document.getElementById('vacationStart').value = today.toISOString().split('T')[0];
+    document.getElementById('vacationEnd').value = nextWeek.toISOString().split('T')[0];
+    modal.show();
+}
     
     async function saveVacation() {
         if (!canEdit) {
