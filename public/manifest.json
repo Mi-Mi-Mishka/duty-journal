@@ -1,6 +1,6 @@
 {
     "name": "Журнал дежурного персонала",
-    "short_name": "ДебЖурнал",
+    "short_name": "VKTM ДеЖурнал",
     "description": "Учёт дежурств, отпусков и дней рождения",
     "start_url": "/",
     "display": "standalone",
