@@ -124,7 +124,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
     const installBtn = document.getElementById('installBtn');
-    if (installBtn) installBtn.style.display = 'block';
+    if (installBtn) installBtn.style.display = 'ruby';
     
     installBtn?.addEventListener('click', () => {
         installBtn.style.display = 'none';
