@@ -174,6 +174,32 @@
         });
       });
     }
+    birthdays.forEach(b => {
+        const isAdmin = window.auth?.user?.role === 'admin';
+        const isMaster = window.auth?.user?.role === 'master';
+        const canDelete = isAdmin || isMaster;
+        
+        html += `
+            <div class="card">
+                <div class="card-body">
+                    <h5>${b.name}</h5>
+                    <p>${b.birth_date}</p>
+                    ${canDelete ? `<button class="btn btn-sm btn-danger delete-birthday" data-id="${b.id}">Удалить</button>` : ''}
+                </div>
+            </div>
+        `;
+    });
+    
+    // Добавить обработчики
+    document.querySelectorAll('.delete-birthday').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const id = btn.dataset.id;
+            if (confirm('Удалить?')) {
+                await apiDeleteBirthday(id);
+                renderBirthdaysList();
+            }
+        });
+    });
   }
 
   function openBirthdayModal() {
