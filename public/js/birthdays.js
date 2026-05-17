@@ -58,7 +58,12 @@
   }
 
   async function renderBirthdaysList(filterMonth = "all") {
+
+
     const birthdays = await apiGetBirthdays();
+
+        const currentUser = window.auth?.user;
+    const canDelete = currentUser?.role === 'master' || currentUser?.role === 'admin';
     const list = document.getElementById("birthdaysList");
     if (!list) return;
 
