@@ -6,7 +6,7 @@
   function getAge(birthDate) {
     const today = new Date();
     const birth = new Date(birthDate);
-    let age = (today.getFullYear() - birth.getFullYear())+1;
+    let age = today.getFullYear() - birth.getFullYear() + 1;
     const monthDiff = today.getMonth() - birth.getMonth();
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate()))
       age--;
@@ -152,7 +152,7 @@
                                     </div>
                                 </div>
                                 ${canEdit ? `<button class="btn btn-sm btn-outline-danger delete-birthday" data-id="${b.id}" data-name="${b.name}"><i class="bi bi-trash"></i></button>` : ""}
-                            </div>
+                                </div>
                         </div>
                     </div>
                 </div>
@@ -163,21 +163,14 @@
 
     if (canEdit) {
       document.querySelectorAll(".delete-birthday").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-          const id = btn.getAttribute("data-id");
-          const name = btn.getAttribute("data-name");
-          document.getElementById("deleteStaffName").textContent = name;
-          const modal = new bootstrap.Modal(
-            document.getElementById("deleteConfirmModal"),
-          );
-
-          document.getElementById("confirmDeleteBtn").onclick = async () => {
+        btn.addEventListener("click", async function () {
+          const id = this.dataset.id;
+          const name = this.dataset.name;
+          if (confirm(`Удалить ${name}?`)) {
             await apiDeleteBirthday(id);
             await renderBirthdaysList();
-            modal.hide();
-            window.showNotification("Сотрудник удалён", "success");
-          };
-          modal.show();
+            showNotification("Сотрудник удалён", "success");
+          }
         });
       });
     }
@@ -197,44 +190,55 @@
     new bootstrap.Modal(document.getElementById("birthdayModal")).show();
   }
 
-async function saveBirthday() {
+  async function saveBirthday() {
     const currentUser = window.auth?.user;
-    const canEdit = currentUser?.role === 'master' || currentUser?.role === 'admin';
-    
+    const canEdit =
+      currentUser?.role === "master" || currentUser?.role === "admin";
+
     if (!canEdit) {
-        alert('У вас нет прав на добавление сотрудников');
-        return;
+      alert("У вас нет прав на добавление сотрудников");
+      return;
     }
-    
-    const name = document.getElementById('birthdayName').value.trim();
-    const birthDate = document.getElementById('birthdayDate').value;
-    const position = document.getElementById('birthdayPosition').value.trim();
-    const department = document.getElementById('birthdayDepartment').value.trim();
-    
+
+    const name = document.getElementById("birthdayName").value.trim();
+    const birthDate = document.getElementById("birthdayDate").value;
+    const position = document.getElementById("birthdayPosition").value.trim();
+    const department = document
+      .getElementById("birthdayDepartment")
+      .value.trim();
+
     if (!name || !birthDate) {
-        alert('Заполните ФИО и дату рождения');
-        return;
+      alert("Заполните ФИО и дату рождения");
+      return;
     }
-    
+
     const birthdays = await apiGetBirthdays();
-    if (birthdays.find(b => b.name.toLowerCase() === name.toLowerCase() && b.birth_date === birthDate)) {
-        alert('Такой сотрудник уже есть в списке');
-        return;
+    if (
+      birthdays.find(
+        (b) =>
+          b.name.toLowerCase() === name.toLowerCase() &&
+          b.birth_date === birthDate,
+      )
+    ) {
+      alert("Такой сотрудник уже есть в списке");
+      return;
     }
-    
+
     await apiAddBirthday({
-        id: Date.now() + Math.random().toString(36).substr(2, 9),
-        name: name,
-        birthDate: birthDate,
-        position: position || null,
-        department: department || null,
-        createdAt: new Date().toISOString()
+      id: Date.now() + Math.random().toString(36).substr(2, 9),
+      name: name,
+      birthDate: birthDate,
+      position: position || null,
+      department: department || null,
+      createdAt: new Date().toISOString(),
     });
-    
+
     await renderBirthdaysList();
-    bootstrap.Modal.getInstance(document.getElementById('birthdayModal')).hide();
-    window.showNotification('Сотрудник добавлен', 'success');
-}
+    bootstrap.Modal.getInstance(
+      document.getElementById("birthdayModal"),
+    ).hide();
+    window.showNotification("Сотрудник добавлен", "success");
+  }
 
   function hideAddButton() {
     const currentUser = window.auth?.user;
@@ -249,40 +253,45 @@ async function saveBirthday() {
     }
   }
 
-  document.addEventListener('DOMContentLoaded', async () => {
-    if (!document.getElementById('birthdaysList')) return;
-    
+  document.addEventListener("DOMContentLoaded", async () => {
+    if (!document.getElementById("birthdaysList")) return;
+
     await renderBirthdaysList();
-    
+
     // Определяем права
     const currentUser = window.auth?.user;
-    const canEdit = currentUser?.role === 'master' || currentUser?.role === 'admin';
-    
+    const canEdit =
+      currentUser?.role === "master" || currentUser?.role === "admin";
+
     // Показываем/скрываем кнопку
-    const addBtn = document.getElementById('addBirthdayBtn');
+    const addBtn = document.getElementById("addBirthdayBtn");
     if (addBtn) {
-        addBtn.style.display = canEdit ? 'block' : 'none';
+      addBtn.style.display = canEdit ? "block" : "none";
     }
-    
+
     // Фильтры по месяцам (всегда работают)
-    document.querySelectorAll('.month-filter').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.month-filter').forEach(b => {
-                b.classList.remove('active');
-                b.style.backgroundColor = '';
-                b.style.color = '';
-            });
-            this.classList.add('active');
-            this.style.backgroundColor = 'var(--corporate-teal)';
-            this.style.color = 'white';
-            renderBirthdaysList(this.getAttribute('data-month'));
+    document.querySelectorAll(".month-filter").forEach((btn) => {
+      btn.addEventListener("click", function () {
+        document.querySelectorAll(".month-filter").forEach((b) => {
+          b.classList.remove("active");
+          b.style.backgroundColor = "";
+          b.style.color = "";
         });
+        this.classList.add("active");
+        this.style.backgroundColor = "var(--corporate-teal)";
+        this.style.color = "white";
+        renderBirthdaysList(this.getAttribute("data-month"));
+      });
     });
-    
+
     // Добавляем обработчики только если есть права
     if (canEdit) {
-        document.getElementById('addBirthdayBtn')?.addEventListener('click', openBirthdayModal);
-        document.getElementById('saveBirthdayBtn')?.addEventListener('click', saveBirthday);
+      document
+        .getElementById("addBirthdayBtn")
+        ?.addEventListener("click", openBirthdayModal);
+      document
+        .getElementById("saveBirthdayBtn")
+        ?.addEventListener("click", saveBirthday);
     }
   });
 })();
