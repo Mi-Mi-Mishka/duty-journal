@@ -186,7 +186,7 @@
   function openBirthdayModal() {
     const currentUser = window.auth?.user;
     const canEdit =
-      currentUser?.role === "master" || currentUser?.role === "admin";
+      currentUser?.role === "master" || currentUser?.role === "master";
 
     if (!canEdit) {
       alert("У вас нет прав на добавление сотрудников");
