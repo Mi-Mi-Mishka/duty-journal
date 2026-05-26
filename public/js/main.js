@@ -66,7 +66,7 @@
             'power_engineer': '⚡ Главный энергетик',
             'lead_engineer': '🔧 Ведущий инженер',
             'master': '🛠️ Мастер',
-            'operator': '👨‍💼 Оператор'
+            'operator': '👨‍💼 Инженер-энергетик'
         };
         
         const userDropdown = document.createElement('li');
