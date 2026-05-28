@@ -192,14 +192,16 @@
                 </div>
                 <form id="inspectionForm">
                     <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label">Время начала осмотра</label>
-                            <input type="datetime-local" class="form-control" id="inspectionStartDatetime" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Время окончания осмотра</label>
-                            <input type="datetime-local" class="form-control" id="inspectionEndDatetime" required>
-                        </div>
+                        <div class="row mb-3">
+    <div class="col-md-6">
+        <label class="form-label">Время начала осмотра</label>
+        <input type="datetime-local" class="form-control" id="inspectionStartDatetime" required>
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Время окончания осмотра</label>
+        <input type="datetime-local" class="form-control" id="inspectionEndDatetime" required>
+    </div>
+</div>
 
                         <div class="inspection-section">
                             <div class="inspection-section-title"><i class="bi bi-fuel-pump me-2"></i>ГАЗ показания
@@ -378,13 +380,11 @@
 
                                 <div class="mb-3">
                                     <label class="form-label">Время начала аварии</label>
-                                    <input type="datetime-local" class="form-control" id="emergencyStartDatetime"
-                                        required>
+                                    <input type="datetime-local" class="form-control" id="emergencyStartDatetime" required>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Время окончания аварии</label>
-                                    <input type="datetime-local" class="form-control" id="emergencyEndDatetime"
-                                        required>
+                                    <input type="datetime-local" class="form-control" id="emergencyEndDatetime" required>
                                 </div>
 
                                 <div class="mb-3">

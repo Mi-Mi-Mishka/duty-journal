@@ -291,8 +291,8 @@ async function addOtherEntry(event) {
       return;
     }
 
-    const startTime = document.getElementById("inspectionStartTime").value;
-    const endTime = document.getElementById("inspectionEndTime").value;
+const startDatetime = document.getElementById('inspectionStartDatetime').value;
+const endDatetime = document.getElementById('inspectionEndDatetime').value;
 
     if (!startTime || !endTime) {
       alert("Пожалуйста, укажите время начала и окончания осмотра");
@@ -328,8 +328,8 @@ async function addOtherEntry(event) {
     const newEntry = {
       id: Date.now() + Math.random().toString(36).substr(2, 9),
       date: currentDate,
-      startTime: startTime,
-      endTime: endTime,
+  startDatetime: startDatetime,
+endDatetime: endDatetime,
       eventText: "Осмотр оборудования",
       staffName: window.currentStaffName,
       eventType: EVENT_TYPES.INSPECTION,
@@ -356,20 +356,27 @@ async function addOtherEntry(event) {
     }
   }
 
-  function showInspectionModal() {
+function showInspectionModal() {
     if (!canWrite) return;
     if (!window.currentStaffName) {
-      alert("Пожалуйста, выберите текущего дежурного");
-      return;
+        alert('Пожалуйста, выберите текущего дежурного');
+        return;
     }
-
+    
+    // Устанавливаем текущую дату и время
     const now = new Date();
-    const currentTime = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
-    document.getElementById("inspectionStartTime").value = currentTime;
-    document.getElementById("inspectionEndTime").value = currentTime;
-
-    new bootstrap.Modal(document.getElementById("inspectionModal")).show();
-  }
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const currentDatetime = `${year}-${month}-${day}T${hours}:${minutes}`;
+    
+    document.getElementById('inspectionStartDatetime').value = currentDatetime;
+    document.getElementById('inspectionEndDatetime').value = currentDatetime;
+    
+    new bootstrap.Modal(document.getElementById('inspectionModal')).show();
+}
 
   // ========== АВАРИЙНЫЕ СОБЫТИЯ ==========
 
