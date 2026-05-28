@@ -370,20 +370,6 @@ app.get('/api/users', async (req, res) => {
     res.json(result.rows);
 });
 
-// ВРЕМЕННЫЙ ЭНДПОИНТ ДЛЯ СБРОСА СЕССИЙ (удалить после использования)
-app.get('/api/reset-sessions', async (req, res) => {
-    try {
-        // Очищаем таблицу активных сессий
-        await pool.query('DELETE FROM active_sessions');
-        // Очищаем таблицу JWT сессий
-        await pool.query('DELETE FROM sessions');
-        res.send('✅ Все сессии сброшены. Теперь можно входить.');
-    } catch (error) {
-        console.error('Ошибка сброса сессий:', error);
-        res.status(500).send('❌ Ошибка при сбросе сессий');
-    }
-});
-
 // ========== ЗАПУСК ==========
 initDatabase().then(() => {
     app.listen(PORT, HOST, () => {
