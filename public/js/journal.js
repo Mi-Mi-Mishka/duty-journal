@@ -517,7 +517,7 @@ async function addOtherEntry(event) {
     }
 
     const incomingStaff = document.getElementById("incomingStaffSelect").value;
-    const shiftTime = document.getElementById("shiftTime").value;
+    const shiftDatetime = document.getElementById('shiftDatetime').value;
 
     if (!incomingStaff) {
       alert("Пожалуйста, выберите персонал, принимающий смену");
@@ -652,23 +652,27 @@ async function addOtherEntry(event) {
         showEmergencyModal();
       });
 
-    document
-      .getElementById("shiftModal")
-      ?.addEventListener("show.bs.modal", async function () {
-        if (!window.currentStaffName) {
-          alert("Сначала выберите текущего дежурного");
-          const modal = bootstrap.Modal.getInstance(
-            document.getElementById("shiftModal"),
-          );
-          if (modal) modal.hide();
-          return;
-        }
-        await loadUsersForShift();
-        const now = new Date();
-        const currentTime = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
-        document.getElementById("shiftTime").value = currentTime;
-        updateShiftModalStaff();
-      });
+document.getElementById('shiftModal')?.addEventListener('show.bs.modal', async function() {
+    if (!window.currentStaffName) {
+        alert('Сначала выберите текущего дежурного');
+        const modal = bootstrap.Modal.getInstance(document.getElementById('shiftModal'));
+        if (modal) modal.hide();
+        return;
+    }
+    await loadUsersForShift();
+    
+    // Устанавливаем текущую дату и время
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const currentDatetime = `${year}-${month}-${day}T${hours}:${minutes}`;
+    document.getElementById('shiftDatetime').value = currentDatetime;
+    
+    updateShiftModalStaff();
+});
 
     document
       .getElementById("addEntryModal")

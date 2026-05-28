@@ -92,8 +92,8 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th style="width: 50px">#</th>
-                                        <th>Дата</th>
-                                        <th>Время</th>
+                                        <th>Время начала</th>
+                                        <th>Время окончания</th>
                                         <th>Тип события</th>
                                         <th>Описание / Показания</th>
                                         <th>ФИО Персонала</th>
@@ -127,14 +127,14 @@
                     <div class="col-md-7">
                         <form id="addForm">
                             <div class="modal-body">
-      <div class="mb-3">
-    <label class="form-label">Время начала события</label>
-    <input type="datetime-local" class="form-control" id="startDatetime" required>
-</div>
-<div class="mb-3">
-    <label class="form-label">Время окончания события</label>
-    <input type="datetime-local" class="form-control" id="endDatetime" required>
-</div>
+                                <div class="mb-3">
+                                    <label class="form-label">Время начала события</label>
+                                    <input type="datetime-local" class="form-control" id="startDatetime" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Время окончания события</label>
+                                    <input type="datetime-local" class="form-control" id="endDatetime" required>
+                                </div>
                                 <div class="mb-3">
                                     <label class="form-label">Текст события</label>
                                     <textarea class="form-control" id="eventText" rows="5"
@@ -192,14 +192,14 @@
                 </div>
                 <form id="inspectionForm">
                     <div class="modal-body">
-<div class="mb-3">
-    <label class="form-label">Время начала осмотра</label>
-    <input type="datetime-local" class="form-control" id="inspectionStartDatetime" required>
-</div>
-<div class="mb-3">
-    <label class="form-label">Время окончания осмотра</label>
-    <input type="datetime-local" class="form-control" id="inspectionEndDatetime" required>
-</div>
+                        <div class="mb-3">
+                            <label class="form-label">Время начала осмотра</label>
+                            <input type="datetime-local" class="form-control" id="inspectionStartDatetime" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Время окончания осмотра</label>
+                            <input type="datetime-local" class="form-control" id="inspectionEndDatetime" required>
+                        </div>
 
                         <div class="inspection-section">
                             <div class="inspection-section-title"><i class="bi bi-fuel-pump me-2"></i>ГАЗ показания
@@ -376,14 +376,16 @@
                                     <strong>Внимание!</strong> Заполните все поля максимально подробно.
                                 </div>
 
-<div class="mb-3">
-    <label class="form-label">Время начала аварии</label>
-    <input type="datetime-local" class="form-control" id="emergencyStartDatetime" required>
-</div>
-<div class="mb-3">
-    <label class="form-label">Время окончания аварии</label>
-    <input type="datetime-local" class="form-control" id="emergencyEndDatetime" required>
-</div>
+                                <div class="mb-3">
+                                    <label class="form-label">Время начала аварии</label>
+                                    <input type="datetime-local" class="form-control" id="emergencyStartDatetime"
+                                        required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Время окончания аварии</label>
+                                    <input type="datetime-local" class="form-control" id="emergencyEndDatetime"
+                                        required>
+                                </div>
 
                                 <div class="mb-3">
                                     <label class="form-label">Тип аварии</label>
@@ -504,10 +506,10 @@
                             class="form-select" id="incomingStaffSelect" required>
                             <option value="">-- Выберите ФИО --</option>
                         </select></div>
-<div class="mb-3">
-    <label class="form-label">Время смены</label>
-    <input type="datetime-local" class="form-control" id="shiftDatetime" required>
-</div>
+                    <div class="mb-3">
+                        <label class="form-label">Дата и время смены</label>
+                        <input type="datetime-local" class="form-control" id="shiftDatetime" required>
+                    </div>
                     <div class="alert alert-info"><i class="bi bi-info-circle me-2"></i>После подтверждения в журнале
                         появится запись.</div>
                 </div>
