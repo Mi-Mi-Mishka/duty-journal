@@ -84,67 +84,75 @@ function updateButtonsVisibility() {
     }
 }
 
-  async function renderTable() {
+// Форматирование даты и времени для отображения
+function formatDateTime(datetime) {
+    if (!datetime) return '—';
+    const date = new Date(datetime);
+    return date.toLocaleString('ru-RU', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+async function renderTable() {
     try {
-      const entries = await apiGetJournal();
-      const tbody = document.getElementById("tableBody");
-      const recordsCount = document.getElementById("recordsCount");
-
-      if (!tbody) return;
-
-      if (!entries || entries.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-5">
-                    <i class="bi bi-inbox fs-1 d-block mb-3"></i>Нет записей.${canWrite ? " Добавьте первую запись!" : ""}</td></tr>`;
-        if (recordsCount) recordsCount.textContent = "0 записей";
-        return;
-      }
-
-      tbody.innerHTML = entries
-        .map((entry, index) => {
-          let description = entry.event_text;
-          if (
-            entry.event_type === EVENT_TYPES.INSPECTION &&
-            entry.inspection_readings
-          ) {
-            try {
-              const readings = JSON.parse(entry.inspection_readings);
-              description = formatInspectionReadings(readings);
-            } catch (e) {}
-          }
-
-          return `<tr>
-                    <td class="text-center"><span class="entry-number">#${index + 1}</span></td>
-                    <td>${entry.date}</td>
-                    <td>${entry.start_time} - ${entry.end_time}</td>
-                    <td>${getEventTypeBadge(entry.event_type)}</td>
-                    <td>${description}</td>
-                    <td>${entry.staff_name}</td>
-                    <td class="text-center">${canWrite ? `<i class="bi bi-trash delete-btn" data-id="${entry.id}" title="Удалить"></i>` : ""}</td>
-                </tr>`;
-        })
-        .join("");
-
-      if (recordsCount) {
-        recordsCount.textContent = `${entries.length} ${getWordForm(entries.length, "запись", "записи", "записей")}`;
-      }
-
-      if (canWrite) {
-        document.querySelectorAll(".delete-btn").forEach((btn) => {
-          btn.addEventListener("click", async () => {
-            const id = btn.getAttribute("data-id");
-            if (confirm("Удалить запись?")) {
-              await apiDeleteJournalEntry(id);
-              await renderTable();
-              window.showNotification("Запись удалена", "danger");
+        const entries = await apiGetJournal();
+        const tbody = document.getElementById('tableBody');
+        const recordsCount = document.getElementById('recordsCount');
+        
+        if (!tbody) return;
+        
+        if (!entries || entries.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-5">
+                <i class="bi bi-inbox fs-1 d-block mb-3"></i>Нет записей.${canWrite ? ' Добавьте первую запись!' : ''}</td></td>`;
+            if (recordsCount) recordsCount.textContent = '0 записей';
+            return;
+        }
+        
+        tbody.innerHTML = entries.map((entry, index) => {
+            let description = entry.event_text;
+            if (entry.event_type === EVENT_TYPES.INSPECTION && entry.inspection_readings) {
+                try {
+                    const readings = JSON.parse(entry.inspection_readings);
+                    description = formatInspectionReadings(readings);
+                } catch(e) {}
             }
-          });
-        });
-      }
+            
+            return `<td>
+                <td class="text-center"><span class="entry-number">#${index + 1}</span></td>
+                <td class="text-nowrap">${formatDateTime(entry.start_datetime)}</td>
+                <td class="text-nowrap">${formatDateTime(entry.end_datetime)}</td>
+                <td>${getEventTypeBadge(entry.event_type)}</td>
+                <td>${description}</td>
+                <td>${entry.staff_name}</td>
+                <td class="text-center">${canWrite ? `<i class="bi bi-trash delete-btn" data-id="${entry.id}" title="Удалить"></i>` : ''}</td>
+            </tr>`;
+        }).join('');
+        
+        if (recordsCount) {
+            recordsCount.textContent = `${entries.length} ${getWordForm(entries.length, 'запись', 'записи', 'записей')}`;
+        }
+        
+        if (canWrite) {
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const id = btn.getAttribute('data-id');
+                    if (confirm('Удалить запись?')) {
+                        await apiDeleteJournalEntry(id);
+                        await renderTable();
+                        window.showNotification('Запись удалена', 'danger');
+                    }
+                });
+            });
+        }
     } catch (error) {
-      console.error("Ошибка загрузки:", error);
-      window.showNotification("Ошибка загрузки данных", "danger");
+        console.error('Ошибка загрузки:', error);
+        window.showNotification('Ошибка загрузки данных', 'danger');
     }
-  }
+}
 
   function formatInspectionReadings(readings) {
     let result = [];
@@ -215,57 +223,46 @@ function updateButtonsVisibility() {
 
   // ========== ПРОЧИЕ СОБЫТИЯ ==========
 
-  async function addOtherEntry(event) {
+async function addOtherEntry(event) {
     event.preventDefault();
-    if (!canWrite) return;
-
     if (!window.currentStaffName) {
-      alert("Пожалуйста, выберите текущего дежурного");
-      return;
+        alert('Пожалуйста, выберите текущего дежурного');
+        return;
     }
-
-    const startTime = document.getElementById("startTime").value;
-    const endTime = document.getElementById("endTime").value;
-    const eventText = document.getElementById("eventText").value.trim();
-
-    if (!startTime || !endTime || !eventText) {
-      alert("Пожалуйста, заполните все поля");
-      return;
+    
+    const startDatetime = document.getElementById('startDatetime').value;
+    const endDatetime = document.getElementById('endDatetime').value;
+    const eventText = document.getElementById('eventText').value.trim();
+    
+    if (!startDatetime || !endDatetime || !eventText) {
+        alert('Пожалуйста, заполните все поля');
+        return;
     }
-
-    const today = new Date();
-    const currentDate = `${String(today.getDate()).padStart(2, "0")}.${String(today.getMonth() + 1).padStart(2, "0")}.${today.getFullYear()}`;
-
+    
     const newEntry = {
-      id: Date.now() + Math.random().toString(36).substr(2, 9),
-      date: currentDate,
-      startTime: startTime,
-      endTime: endTime,
-      eventText: eventText,
-      staffName: window.currentStaffName,
-      eventType: EVENT_TYPES.OTHER,
-      timestamp: Date.now(),
-      inspectionReadings: null,
-      shiftFrom: null,
-      shiftTo: null,
+        id: Date.now() + Math.random().toString(36).substr(2, 9),
+        startDatetime: startDatetime,
+        endDatetime: endDatetime,
+        eventText: eventText,
+        staffName: window.currentStaffName,
+        eventType: EVENT_TYPES.OTHER,
+        inspectionReadings: null,
+        shiftFrom: null,
+        shiftTo: null
     };
-
+    
     try {
-      await apiAddJournalEntry(newEntry);
-      document.getElementById("addForm").reset();
-      await renderTable();
-
-      const addModal = bootstrap.Modal.getInstance(
-        document.getElementById("addEntryModal"),
-      );
-      if (addModal) addModal.hide();
-
-      window.showNotification("Запись успешно добавлена!", "success");
+        await apiAddJournalEntry(newEntry);
+        document.getElementById('addForm').reset();
+        await renderTable();
+        const addModal = bootstrap.Modal.getInstance(document.getElementById('addEntryModal'));
+        if (addModal) addModal.hide();
+        window.showNotification('Запись успешно добавлена!', 'success');
     } catch (error) {
-      console.error(error);
-      alert("Ошибка при сохранении");
+        console.error(error);
+        alert('Ошибка при сохранении');
     }
-  }
+}
 
   window.insertTemplate = function (templateNumber) {
     const eventTextArea = document.getElementById("eventText");

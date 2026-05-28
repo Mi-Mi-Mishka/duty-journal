@@ -74,20 +74,18 @@ async function initDatabase() {
     
     // Таблица журнала дежурств
     await pool.query(`
-        CREATE TABLE IF NOT EXISTS journal_entries (
-            id TEXT PRIMARY KEY,
-            date TEXT NOT NULL,
-            start_time TEXT NOT NULL,
-            end_time TEXT NOT NULL,
-            event_text TEXT NOT NULL,
-            staff_name TEXT NOT NULL,
-            event_type TEXT NOT NULL,
-            timestamp BIGINT NOT NULL,
-            inspection_readings TEXT,
-            shift_from TEXT,
-            shift_to TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
+CREATE TABLE IF NOT EXISTS journal_entries (
+    id TEXT PRIMARY KEY,
+    start_datetime TEXT NOT NULL,      -- дата и время начала (ISO)
+    end_datetime TEXT NOT NULL,        -- дата и время окончания (ISO)
+    event_text TEXT NOT NULL,
+    staff_name TEXT NOT NULL,
+    event_type TEXT NOT NULL,
+    inspection_readings TEXT,
+    shift_from TEXT,
+    shift_to TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
     `);
     
     // Таблица отпусков (не используется, но оставим)
@@ -334,13 +332,13 @@ app.get('/api/journal', authenticateToken, async (req, res) => {
 });
 
 app.post('/api/journal', authenticateToken, canWriteJournal, async (req, res) => {
-    const { id, date, startTime, endTime, eventText, staffName, eventType, timestamp, inspectionReadings, shiftFrom, shiftTo } = req.body;
+    const { id, startDatetime, endDatetime, eventText, staffName, eventType, inspectionReadings, shiftFrom, shiftTo } = req.body;
     
     await pool.query(
         `INSERT INTO journal_entries 
-         (id, date, start_time, end_time, event_text, staff_name, event_type, timestamp, inspection_readings, shift_from, shift_to)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-        [id, date, startTime, endTime, eventText, staffName, eventType, timestamp, JSON.stringify(inspectionReadings), shiftFrom, shiftTo]
+         (id, start_datetime, end_datetime, event_text, staff_name, event_type, inspection_readings, shift_from, shift_to)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        [id, startDatetime, endDatetime, eventText, staffName, eventType, JSON.stringify(inspectionReadings), shiftFrom, shiftTo]
     );
     
     res.json({ success: true, id });
