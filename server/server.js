@@ -233,18 +233,18 @@ await pool.query('DELETE FROM active_sessions WHERE user_id = $1', [user.id]);
 await pool.query('DELETE FROM sessions WHERE user_id = $1', [user.id]);
     
     // Ограничение для оператора: проверяем, нет ли уже активной сессии
-    // if (user.role === 'operator') {
-    //     const activeSession = await pool.query(
-    //         'SELECT * FROM active_sessions WHERE user_id = $1',
-    //         [user.id]
-    //     );
+    if (user.role === 'operator') {
+        const activeSession = await pool.query(
+            'SELECT * FROM active_sessions WHERE user_id = $1',
+            [user.id]
+        );
         
-    //     if (activeSession.rows.length > 0) {
-    //         return res.status(403).json({ 
-    //             error: 'Учётная запись уже используется на другом устройстве. Выйдите там.' 
-    //         });
-    //     }
-    // }
+        if (activeSession.rows.length > 0) {
+            return res.status(403).json({ 
+                error: 'Учётная запись уже используется на другом устройстве. Выйдите там.' 
+            });
+        }
+    }
     
     let selectedStaff = null;
     if (user.role === 'operator') {
