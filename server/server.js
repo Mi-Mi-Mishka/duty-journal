@@ -227,20 +227,24 @@ app.post('/api/login', async (req, res) => {
     if (!isValidPassword) {
         return res.status(401).json({ error: 'Неверный логин или пароль' });
     }
+
+    // Принудительно удаляем старые сессии этого пользователя
+await pool.query('DELETE FROM active_sessions WHERE user_id = $1', [user.id]);
+await pool.query('DELETE FROM sessions WHERE user_id = $1', [user.id]);
     
     // Ограничение для оператора: проверяем, нет ли уже активной сессии
-    if (user.role === 'operator') {
-        const activeSession = await pool.query(
-            'SELECT * FROM active_sessions WHERE user_id = $1',
-            [user.id]
-        );
+    // if (user.role === 'operator') {
+    //     const activeSession = await pool.query(
+    //         'SELECT * FROM active_sessions WHERE user_id = $1',
+    //         [user.id]
+    //     );
         
-        if (activeSession.rows.length > 0) {
-            return res.status(403).json({ 
-                error: 'Учётная запись уже используется на другом устройстве. Выйдите там.' 
-            });
-        }
-    }
+    //     if (activeSession.rows.length > 0) {
+    //         return res.status(403).json({ 
+    //             error: 'Учётная запись уже используется на другом устройстве. Выйдите там.' 
+    //         });
+    //     }
+    // }
     
     let selectedStaff = null;
     if (user.role === 'operator') {
@@ -303,9 +307,12 @@ app.post('/api/logout', authenticateToken, async (req, res) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader.split(' ')[1];
     
-    // Удаляем из активных сессий
-    await pool.query('DELETE FROM active_sessions WHERE token = $1', [token]);
-    await pool.query('DELETE FROM sessions WHERE token = $1', [token]);
+    // Получаем user_id из токена
+    const decoded = jwt.verify(token, JWT_SECRET);
+    
+    // Удаляем все сессии этого пользователя
+    await pool.query('DELETE FROM active_sessions WHERE user_id = $1', [decoded.id]);
+    await pool.query('DELETE FROM sessions WHERE user_id = $1', [decoded.id]);
     
     res.json({ success: true });
 });
