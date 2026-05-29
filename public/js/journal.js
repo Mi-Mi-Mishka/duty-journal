@@ -131,10 +131,10 @@
     function formatInspectionReadings(readings) {
         let result = [];
         if (readings.gasLow || readings.gasMedium || readings.gasHigh) {
-            let gasStr = '📊 Давление газа:';
-            if (readings.gasLow) gasStr += ` низкое ${readings.gasLow} кПа,`;
-            if (readings.gasMedium) gasStr += ` среднее ${readings.gasMedium} кПа,`;
-            if (readings.gasHigh) gasStr += ` высокое ${readings.gasHigh} кПа`;
+            let gasStr = '📊 ГАЗ:';
+            if (readings.gasLow) gasStr += ` котельная ${readings.gasLow} м3,`;
+            if (readings.gasMedium) gasStr += ` среднее ${readings.gasMedium} м3,`;
+            if (readings.gasHigh) gasStr += ` высокое ${readings.gasHigh} м3`;
             result.push(gasStr.replace(/,$/, ''));
         }
         if (readings.dguTemp) result.push(`🌡️ Температура ОЖ ДГУ: ${readings.dguTemp}°C`);
@@ -154,7 +154,7 @@
         if (tempReadings.length) result.push(`💧 Температуры систем: ${tempReadings.join(', ')}`);
         
         let roomTemps = [];
-        if (readings.roomTempRU04) roomTemps.push(`РУ-04кВ ${readings.roomTempRU04}°C`);
+        if (readings.roomTempRU04) roomTemps.push(`РУ-0,4кВ ${readings.roomTempRU04}°C`);
         if (readings.roomTempRU10) roomTemps.push(`РУ-10кВ ${readings.roomTempRU10}°C`);
         if (roomTemps.length) result.push(`🏢 Помещения: ${roomTemps.join(', ')}`);
         
@@ -235,9 +235,9 @@
         const eventTextArea = document.getElementById('eventText');
         if (!eventTextArea) return;
         const templates = [
-            'Проведены плановые регламентные работы. Оборудование работает в штатном режиме.',
-            'Выявлены замечания в работе оборудования. Требуется наблюдение.',
-            'Смена передана. Оборудование работает в штатном режиме. Замечаний нет.'
+            'Ошибка ИБП №3 в LVSR5. Перегрев инвертора',
+            'Чистка фильтра шкафа приточной вентиляции',
+            'Отключен вентилятор 1 зоны ФКВО. Вывешен плакат "Не включать! Работают люди!"'
         ];
         if (templateNumber >= 1 && templateNumber <= 3) {
             eventTextArea.value = templates[templateNumber - 1];
