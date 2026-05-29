@@ -375,6 +375,11 @@ app.get('/api/users', async (req, res) => {
     res.json(result.rows);
 });
 
+// Специальный эндпоинт для пинга (возвращает минимум данных)
+app.get('/ping', (req, res) => {
+    res.status(200).send('ok');
+});
+
 // ========== ЗАПУСК ==========
 initDatabase().then(() => {
     app.listen(PORT, HOST, () => {
