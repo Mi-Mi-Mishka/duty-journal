@@ -422,8 +422,8 @@ function showInspectionModal() {
       return;
     }
 
-    const startTime = document.getElementById("emergencyStartTime").value;
-    const endTime = document.getElementById("emergencyEndTime").value;
+const startDatetime = document.getElementById('emergencyStartDatetime').value;
+const endDatetime = document.getElementById('emergencyEndDatetime').value;
     const emergencyType = document.getElementById("emergencyType").value;
     const description = document
       .getElementById("emergencyDescription")
@@ -448,8 +448,8 @@ function showInspectionModal() {
     const newEntry = {
       id: Date.now() + Math.random().toString(36).substr(2, 9),
       date: currentDate,
-      startTime: startTime,
-      endTime: endTime,
+startDatetime: startDatetime,
+endDatetime: endDatetime,
       eventText: eventText,
       staffName: window.currentStaffName,
       eventType: EVENT_TYPES.EMERGENCY,
@@ -493,22 +493,28 @@ function showInspectionModal() {
     }
   }
 
-  function showEmergencyModal() {
+function showEmergencyModal() {
     if (!canWrite) return;
     if (!window.currentStaffName) {
-      alert("Пожалуйста, выберите текущего дежурного");
-      return;
+        alert('Пожалуйста, выберите текущего дежурного');
+        return;
     }
-
+    
+    // Устанавливаем текущую дату и время
     const now = new Date();
-    const currentTime = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
-    document.getElementById("emergencyStartTime").value = currentTime;
-    document.getElementById("emergencyEndTime").value = currentTime;
-    document.getElementById("emergencyStaffName").value =
-      window.currentStaffName;
-
-    new bootstrap.Modal(document.getElementById("emergencyModal")).show();
-  }
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const currentDatetime = `${year}-${month}-${day}T${hours}:${minutes}`;
+    
+    document.getElementById('emergencyStartDatetime').value = currentDatetime;
+    document.getElementById('emergencyEndDatetime').value = currentDatetime;
+    document.getElementById('emergencyStaffName').value = window.currentStaffName;
+    
+    new bootstrap.Modal(document.getElementById('emergencyModal')).show();
+}
 
   // ========== СМЕНА ==========
 
