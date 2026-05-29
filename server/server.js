@@ -327,7 +327,7 @@ app.get('/api/shift-staff', async (req, res) => {
 // ========== API ЖУРНАЛА ==========
 
 app.get('/api/journal', authenticateToken, async (req, res) => {
-    const result = await pool.query('SELECT * FROM journal_entries ORDER BY date DESC, start_time DESC');
+    const result = await pool.query('SELECT * FROM journal_entries ORDER BY start_datetime DESC');
     res.json(result.rows);
 });
 
