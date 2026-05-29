@@ -282,79 +282,72 @@ async function addOtherEntry(event) {
 
   // ========== ОБХОД ОБОРУДОВАНИЯ ==========
 
-  async function addInspectionEntry(event) {
+async function addInspectionEntry(event) {
     event.preventDefault();
     if (!canWrite) return;
-
+    
     if (!window.currentStaffName) {
-      alert("Пожалуйста, выберите текущего дежурного");
-      return;
+        alert('Пожалуйста, выберите текущего дежурного');
+        return;
     }
-
-const startDatetime = document.getElementById('inspectionStartDatetime').value;
-const endDatetime = document.getElementById('inspectionEndDatetime').value;
-
-    if (!startTime || !endTime) {
-      alert("Пожалуйста, укажите время начала и окончания осмотра");
-      return;
+    
+    const startDatetime = document.getElementById('inspectionStartDatetime').value;
+    const endDatetime = document.getElementById('inspectionEndDatetime').value;
+    
+    if (!startDatetime || !endDatetime) {
+        alert('Пожалуйста, укажите время начала и окончания осмотра');
+        return;
     }
-
+    
     const inspectionReadings = {
-      gasLow: document.getElementById("gasLow").value,
-      gasMedium: document.getElementById("gasMedium").value,
-      gasHigh: document.getElementById("gasHigh").value,
-      dguTemp: document.getElementById("dguTemp").value,
-      lvsr1: document.getElementById("lvsr1").value,
-      lvsr2: document.getElementById("lvsr2").value,
-      lvsr3: document.getElementById("lvsr3").value,
-      lvsr4: document.getElementById("lvsr4").value,
-      debTemp: document.getElementById('debTemp').value,
-      lvsr5: document.getElementById("lvsr5").value,
-      otTemp: document.getElementById("otTemp").value,
-      gvsTemp: document.getElementById("gvsTemp").value,
-      gvn2a: document.getElementById("gvn2a").value,
-      gvn2b: document.getElementById("gvn2b").value,
-      gvn3: document.getElementById("gvn3").value,
-      gvn4: document.getElementById("gvn4").value,
-      gvn5: document.getElementById("gvn5").value,
-      gvn6: document.getElementById("gvn6").value,
-      roomTempRU04: document.getElementById("roomTempRU04").value,
-      roomTempRU10: document.getElementById("roomTempRU10").value,
+        gasLow: document.getElementById('gasLow').value,
+        gasMedium: document.getElementById('gasMedium').value,
+        gasHigh: document.getElementById('gasHigh').value,
+        dguTemp: document.getElementById('dguTemp').value,
+        lvsr1: document.getElementById('lvsr1').value,
+        lvsr2: document.getElementById('lvsr2').value,
+        lvsr3: document.getElementById('lvsr3').value,
+        lvsr4: document.getElementById('lvsr4').value,
+        lvsr5: document.getElementById('lvsr5').value,
+        debTemp: document.getElementById('debTemp').value,
+        otTemp: document.getElementById('otTemp').value,
+        gvsTemp: document.getElementById('gvsTemp').value,
+        gvn2a: document.getElementById('gvn2a').value,
+        gvn2b: document.getElementById('gvn2b').value,
+        gvn3: document.getElementById('gvn3').value,
+        gvn4: document.getElementById('gvn4').value,
+        gvn5: document.getElementById('gvn5').value,
+        gvn6: document.getElementById('gvn6').value,
+        roomTempRU04: document.getElementById('roomTempRU04').value,
+        roomTempRU10: document.getElementById('roomTempRU10').value
     };
-
-    const today = new Date();
-    const currentDate = `${String(today.getDate()).padStart(2, "0")}.${String(today.getMonth() + 1).padStart(2, "0")}.${today.getFullYear()}`;
-
+    
     const newEntry = {
-      id: Date.now() + Math.random().toString(36).substr(2, 9),
-      date: currentDate,
-  startDatetime: startDatetime,
-endDatetime: endDatetime,
-      eventText: "Осмотр оборудования",
-      staffName: window.currentStaffName,
-      eventType: EVENT_TYPES.INSPECTION,
-      timestamp: Date.now(),
-      inspectionReadings: inspectionReadings,
-      shiftFrom: null,
-      shiftTo: null,
+        id: Date.now() + Math.random().toString(36).substr(2, 9),
+        startDatetime: startDatetime,
+        endDatetime: endDatetime,
+        eventText: 'Осмотр оборудования',
+        staffName: window.currentStaffName,
+        eventType: EVENT_TYPES.INSPECTION,
+        inspectionReadings: inspectionReadings,
+        shiftFrom: null,
+        shiftTo: null
     };
-
+    
     try {
-      await apiAddJournalEntry(newEntry);
-      document.getElementById("inspectionForm").reset();
-      await renderTable();
-
-      const inspectionModal = bootstrap.Modal.getInstance(
-        document.getElementById("inspectionModal"),
-      );
-      if (inspectionModal) inspectionModal.hide();
-
-      window.showNotification("Показания осмотра сохранены!", "success");
+        await apiAddJournalEntry(newEntry);
+        document.getElementById('inspectionForm').reset();
+        await renderTable();
+        
+        const inspectionModal = bootstrap.Modal.getInstance(document.getElementById('inspectionModal'));
+        if (inspectionModal) inspectionModal.hide();
+        
+        window.showNotification('Показания осмотра сохранены!', 'success');
     } catch (error) {
-      console.error(error);
-      alert("Ошибка при сохранении");
+        console.error(error);
+        alert('Ошибка при сохранении');
     }
-  }
+}
 
 function showInspectionModal() {
     if (!canWrite) return;
