@@ -103,3 +103,31 @@ thead th { position: sticky; top: 0; background: white; box-shadow: 0 2px 2px -1
     white-space: pre-wrap;
     word-wrap: break-word;
 }
+
+/* Кнопка установки */
+#installContainer {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+#installBtn {
+    border-radius: 50px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* На мобильных устройствах */
+@media (max-width: 768px) {
+    #installBtn {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+}

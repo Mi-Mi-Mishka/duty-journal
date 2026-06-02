@@ -118,18 +118,43 @@
         init();
     }
 
-    let deferredPrompt;
+    // ========== PWA УСТАНОВКА ==========
+let deferredPrompt;
+const installContainer = document.getElementById('installContainer');
+const installBtn = document.getElementById('installBtn');
 
+// Перехватываем событие beforeinstallprompt
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    const installBtn = document.getElementById('installBtn');
-    if (installBtn) installBtn.style.display = 'block';
-    
-    installBtn?.addEventListener('click', () => {
-        installBtn.style.display = 'none';
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
-    });
+    // Показываем кнопку
+    if (installContainer) installContainer.style.display = 'block';
 });
+
+// Обработчик клика по кнопке
+if (installBtn) {
+    installBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        // Показываем диалог установки
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`Результат установки: ${outcome}`);
+        deferredPrompt = null;
+        // Скрываем кнопку после установки
+        if (installContainer) installContainer.style.display = 'none';
+    });
+}
+
+// Если приложение уже установлено, скрываем кнопку
+window.addEventListener('appinstalled', () => {
+    console.log('✅ Приложение установлено');
+    if (installContainer) installContainer.style.display = 'none';
+    deferredPrompt = null;
+});
+
+// Показываем кнопку, если сайт открыт в браузере (не как PWA)
+if (window.matchMedia('(display-mode: browser)').matches) {
+    // Кнопка будет показана только при событии beforeinstallprompt
+    // Это нормально
+}
 })();
