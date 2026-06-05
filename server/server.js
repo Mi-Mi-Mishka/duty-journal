@@ -207,7 +207,7 @@ function canEditBirthdays(req, res, next) {
 // ========== API АУТЕНТИФИКАЦИИ ==========
 
 app.post('/api/login', async (req, res) => {
-    const { username, password, shiftStaffId } = req.body;
+    const { username, password, shiftStaffId, rememberMe } = req.body;
     
     if (!username || !password) {
         return res.status(400).json({ error: 'Введите логин и пароль' });
@@ -225,12 +225,8 @@ app.post('/api/login', async (req, res) => {
     if (!isValidPassword) {
         return res.status(401).json({ error: 'Неверный логин или пароль' });
     }
-
-    // Принудительно удаляем старые сессии этого пользователя
-await pool.query('DELETE FROM active_sessions WHERE user_id = $1', [user.id]);
-await pool.query('DELETE FROM sessions WHERE user_id = $1', [user.id]);
     
-    // Ограничение для оператора: проверяем, нет ли уже активной сессии
+    // Ограничение для оператора
     if (user.role === 'operator') {
         const activeSession = await pool.query(
             'SELECT * FROM active_sessions WHERE user_id = $1',
@@ -256,6 +252,9 @@ await pool.query('DELETE FROM sessions WHERE user_id = $1', [user.id]);
         selectedStaff = staffResult.rows[0];
     }
     
+    // ⭐ ВАЖНО: выбираем срок жизни токена
+    const expiresIn = rememberMe ? '30d' : '24h';
+    
     const token = jwt.sign(
         { 
             id: user.id, 
@@ -267,11 +266,11 @@ await pool.query('DELETE FROM sessions WHERE user_id = $1', [user.id]);
             shiftStaffName: selectedStaff?.name || null
         },
         JWT_SECRET,
-        { expiresIn: '24h' }
+        { expiresIn: expiresIn }
     );
     
     const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 24);
+    expiresAt.setHours(expiresAt.getHours() + (rememberMe ? 720 : 24));
     
     // Сохраняем сессию
     await pool.query(
@@ -279,7 +278,7 @@ await pool.query('DELETE FROM sessions WHERE user_id = $1', [user.id]);
         [user.id, token, expiresAt]
     );
     
-    // Сохраняем активную сессию (для ограничения одного входа)
+    // Сохраняем активную сессию
     const deviceInfo = req.headers['user-agent'] || 'неизвестно';
     await pool.query(
         'INSERT INTO active_sessions (user_id, token, device_info) VALUES ($1, $2, $3)',

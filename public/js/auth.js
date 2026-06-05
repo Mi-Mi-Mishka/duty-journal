@@ -1,11 +1,16 @@
 // auth.js - модуль авторизации
 (function() {
+    // Функция получения токена из любого хранилища
+    function getToken() {
+        return localStorage.getItem('token') || sessionStorage.getItem('token');
+    }
+    
     // Сохраняем оригинальный fetch
     const originalFetch = window.fetch;
     
     // Перехватываем fetch запросы и добавляем токен
     window.fetch = function(...args) {
-        const token = localStorage.getItem('token');
+        const token = getToken();
         if (token && args[0].includes('/api/')) {
             const options = args[1] || {};
             options.headers = options.headers || {};
@@ -18,7 +23,10 @@
     // Глобальный объект для авторизации
     window.auth = {
         user: null,
-        token: localStorage.getItem('token'),
+        
+        getToken() {
+            return getToken();
+        },
         
         async loadCurrentUser() {
             try {
@@ -40,12 +48,15 @@
         
         logout() {
             localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            sessionStorage.removeItem('token');
+            sessionStorage.removeItem('user');
             this.user = null;
             window.location.href = '/login.html';
         },
         
         requireAuth() {
-            if (!localStorage.getItem('token')) {
+            if (!this.getToken()) {
                 window.location.href = '/login.html';
                 return false;
             }
@@ -63,7 +74,7 @@
     // Загружаем пользователя при загрузке страницы
     window.auth.loadCurrentUser();
     
-    // Делаем функции глобальными для обратной совместимости
+    // Делаем функции глобальными
     window.loadCurrentUser = () => window.auth.loadCurrentUser();
     window.logout = () => window.auth.logout();
     window.requireAuth = () => window.auth.requireAuth();
