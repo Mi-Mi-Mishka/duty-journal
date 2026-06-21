@@ -58,6 +58,57 @@
         </div>
     </div>
 
+    <!-- Фильтры -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="row g-3 align-items-end">
+                    <!-- Поиск по тексту -->
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted">Поиск</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control" id="searchInput" placeholder="Поиск по событиям...">
+                        </div>
+                    </div>
+                    
+                    <!-- Фильтр по дате -->
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted">Дата от</label>
+                        <input type="date" class="form-control" id="dateFrom">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted">Дата до</label>
+                        <input type="date" class="form-control" id="dateTo">
+                    </div>
+                    
+                    <!-- Фильтр по типу события -->
+                    <div class="col-md-2">
+                        <label class="form-label small text-muted">Тип события</label>
+                        <select class="form-select" id="eventTypeFilter">
+                            <option value="all">Все типы</option>
+                            <option value="inspection">Обход</option>
+                            <option value="emergency">Авария</option>
+                            <option value="shift">Смена</option>
+                            <option value="other">Прочее</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Кнопка сброса -->
+                    <div class="col-md-1">
+                        <button class="btn btn-outline-secondary w-100" id="clearFiltersBtn">
+                            <i class="bi bi-eraser"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--Таблицы-->
+
     <div class="row">
         <div class="col-12">
             <div class="card shadow-sm">
