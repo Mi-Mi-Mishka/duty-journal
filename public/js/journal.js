@@ -6,6 +6,14 @@
         OTHER: 'other',
         SHIFT: 'shift'
     };
+
+        // ========== ФИЛЬТРЫ ==========
+    let currentFilters = {
+        search: '',
+        dateFrom: '',
+        dateTo: '',
+        eventType: 'all'
+    };
     
     let canWrite = false;
     let currentUser = null;
@@ -70,23 +78,65 @@
             minute: '2-digit'
         });
     }
+
+        // ========== ФИЛЬТРАЦИЯ ==========
+    function filterEntries(entries) {
+        return entries.filter(entry => {
+            // Поиск по тексту
+            if (currentFilters.search) {
+                const searchLower = currentFilters.search.toLowerCase();
+                const text = (entry.event_text || '').toLowerCase();
+                const staff = (entry.staff_name || '').toLowerCase();
+                if (!text.includes(searchLower) && !staff.includes(searchLower)) {
+                    return false;
+                }
+            }
+            
+            // Фильтр по дате (от)
+            if (currentFilters.dateFrom) {
+                const entryDate = entry.start_datetime ? new Date(entry.start_datetime) : new Date(entry.date);
+                const fromDate = new Date(currentFilters.dateFrom);
+                fromDate.setHours(0, 0, 0, 0);
+                if (entryDate < fromDate) return false;
+            }
+            
+            // Фильтр по дате (до)
+            if (currentFilters.dateTo) {
+                const entryDate = entry.start_datetime ? new Date(entry.start_datetime) : new Date(entry.date);
+                const toDate = new Date(currentFilters.dateTo);
+                toDate.setHours(23, 59, 59, 999);
+                if (entryDate > toDate) return false;
+            }
+            
+            // Фильтр по типу события
+            if (currentFilters.eventType !== 'all' && entry.event_type !== currentFilters.eventType) {
+                return false;
+            }
+            
+            return true;
+        });
+    }
     
     async function renderTable() {
         try {
-            const entries = await apiGetJournal();
+            const allEntries = await apiGetJournal();
+            const filteredEntries = filterEntries(allEntries);
+            
             const tbody = document.getElementById('tableBody');
             const recordsCount = document.getElementById('recordsCount');
             
             if (!tbody) return;
             
-            if (!entries || entries.length === 0) {
-                tbody.innerHTML = `<table><td colspan="7" class="text-center text-muted py-5">
-                    <i class="bi bi-inbox fs-1 d-block mb-3"></i>Нет записей.${canWrite ? ' Добавьте первую запись!' : ''}</td></tr>`;
-                if (recordsCount) recordsCount.textContent = '0 записей';
+            if (!filteredEntries || filteredEntries.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-5">
+                    <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                    ${allEntries.length === 0 ? 'Нет записей. Добавьте первую запись!' : 'По вашему запросу ничего не найдено.'}
+                    ${canWrite && allEntries.length === 0 ? ' Добавьте первую запись!' : ''}</td></tr>`;
+                if (recordsCount) recordsCount.textContent = `${filteredEntries.length} из ${allEntries.length} записей`;
                 return;
             }
             
-            tbody.innerHTML = entries.map((entry, index) => {
+            tbody.innerHTML = filteredEntries.map((entry, index) => {
                 let description = entry.event_text;
                 if (entry.event_type === EVENT_TYPES.INSPECTION && entry.inspection_readings) {
                     try {
@@ -107,7 +157,7 @@
             }).join('');
             
             if (recordsCount) {
-                recordsCount.textContent = `${entries.length} ${getWordForm(entries.length, 'запись', 'записи', 'записей')}`;
+                recordsCount.textContent = `${filteredEntries.length} из ${allEntries.length} записей`;
             }
             
             if (canWrite) {
@@ -554,6 +604,36 @@
             }
             document.getElementById('emergencyStaffName').value = window.currentStaffName;
         });
+
+            // ========== ОБРАБОТЧИКИ ФИЛЬТРОВ ==========
+    const searchInput = document.getElementById('searchInput');
+    const dateFrom = document.getElementById('dateFrom');
+    const dateTo = document.getElementById('dateTo');
+    const eventTypeFilter = document.getElementById('eventTypeFilter');
+    const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+
+    function applyFilters() {
+        currentFilters.search = searchInput ? searchInput.value.trim() : '';
+        currentFilters.dateFrom = dateFrom ? dateFrom.value : '';
+        currentFilters.dateTo = dateTo ? dateTo.value : '';
+        currentFilters.eventType = eventTypeFilter ? eventTypeFilter.value : 'all';
+        renderTable();
+    }
+
+    function clearFilters() {
+        if (searchInput) searchInput.value = '';
+        if (dateFrom) dateFrom.value = '';
+        if (dateTo) dateTo.value = '';
+        if (eventTypeFilter) eventTypeFilter.value = 'all';
+        currentFilters = { search: '', dateFrom: '', dateTo: '', eventType: 'all' };
+        renderTable();
+    }
+
+    if (searchInput) searchInput.addEventListener('input', applyFilters);
+    if (dateFrom) dateFrom.addEventListener('change', applyFilters);
+    if (dateTo) dateTo.addEventListener('change', applyFilters);
+    if (eventTypeFilter) eventTypeFilter.addEventListener('change', applyFilters);
+    if (clearFiltersBtn) clearFiltersBtn.addEventListener('click', clearFilters);
     }
     
     document.addEventListener('DOMContentLoaded', async () => {
