@@ -350,24 +350,24 @@ app.delete('/api/journal/:id', authenticateToken, canWriteJournal, async (req, r
 
 // ========== API ДНЕЙ РОЖДЕНИЯ ==========
 
-app.get('/api/birthdays', authenticateToken, async (req, res) => {
-    const result = await pool.query('SELECT * FROM birthdays');
-    res.json(result.rows);
-});
+// app.get('/api/birthdays', authenticateToken, async (req, res) => {
+//     const result = await pool.query('SELECT * FROM birthdays');
+//     res.json(result.rows);
+// });
 
-app.post('/api/birthdays', authenticateToken, canEditBirthdays, async (req, res) => {
-    const { id, name, birthDate, position, department, createdAt } = req.body;
-    await pool.query(
-        'INSERT INTO birthdays (id, name, birth_date, position, department, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-        [id, name, birthDate, position, department, createdAt || new Date().toISOString(), new Date()]
-    );
-    res.json({ success: true, id });
-});
+// app.post('/api/birthdays', authenticateToken, canEditBirthdays, async (req, res) => {
+//     const { id, name, birthDate, position, department, createdAt } = req.body;
+//     await pool.query(
+//         'INSERT INTO birthdays (id, name, birth_date, position, department, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+//         [id, name, birthDate, position, department, createdAt || new Date().toISOString(), new Date()]
+//     );
+//     res.json({ success: true, id });
+// });
 
-app.delete('/api/birthdays/:id', authenticateToken, canEditBirthdays, async (req, res) => {
-    await pool.query('DELETE FROM birthdays WHERE id = $1', [req.params.id]);
-    res.json({ success: true });
-});
+// app.delete('/api/birthdays/:id', authenticateToken, canEditBirthdays, async (req, res) => {
+//     await pool.query('DELETE FROM birthdays WHERE id = $1', [req.params.id]);
+//     res.json({ success: true });
+// });
 
 app.get('/api/users', async (req, res) => {
     const result = await pool.query('SELECT id, username, full_name, role, is_shared FROM users');
