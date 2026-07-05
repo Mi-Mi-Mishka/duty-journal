@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
@@ -9,340 +10,486 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body class="bg-light">
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4 shadow-sm">
-    <div class="container">
-        <a class="navbar-brand" href="/"><i class="bi bi-journal-text me-2"></i>Оперативный журнал</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item"><a class="nav-link active" href="/journal.html"><i class="bi bi-journal-bookmark-fill me-1"></i>Оперативный журнал</a></li>
-                <li class="nav-item"><a class="nav-link" href="/birthdays.html"><i class="bi bi-gift me-1"></i>Дни рождения</a></li>
-            </ul>
-            <ul class="navbar-nav ms-auto align-items-center">
-                <li class="nav-item">
-                    <span class="nav-link text-white">
-                        <i class="bi bi-person-badge me-1"></i>
-                        Текущий дежурный: <strong id="currentStaffDisplay">Загрузка...</strong>
-                    </span>
-                </li>
-            </ul>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4 shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="bi bi-journal-text me-2"></i>Оперативный журнал</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="journal.html">
+                            <i class="bi bi-journal-bookmark-fill me-1"></i>Журнал дежурств
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="birthdays.html">
+                            <i class="bi bi-gift me-1"></i>Дни рождения
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="schemas.html">
+                            <i class="bi bi-diagram-3 me-1"></i>Схемы оборудования
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <span class="nav-link text-white">
+                            <i class="bi bi-person-badge me-1"></i>
+                            Текущий дежурный: <strong id="currentStaffDisplay">Загрузка...</strong>
+                        </span>
+                    </li>
+                </ul>
+            </div>
         </div>
-    </div>
-</nav>
+    </nav>
 
-<div class="container py-2">
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <h2 class="h4 mb-0"><i class="bi bi-journal-check me-2 text-primary"></i>Оперативный журнал</h2>
-                <div class="d-flex gap-2">
-                    <button class="btn btn-shift" id="shiftBtn" data-bs-toggle="modal" data-bs-target="#shiftModal">
-                        <i class="bi bi-arrow-left-right me-2"></i>Приём/Сдача смены
-                    </button>
-                    <div class="dropdown">
-                        <button class="btn btn-primary dropdown-toggle" type="button" id="eventTypeDropdown" data-bs-toggle="dropdown">
-                            <i class="bi bi-plus-circle me-2"></i>Добавить запись
+    <div class="container py-2">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <h2 class="h4 mb-0"><i class="bi bi-journal-check me-2 text-primary"></i>Оперативный журнал</h2>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-shift" id="shiftBtn" data-bs-toggle="modal" data-bs-target="#shiftModal">
+                            <i class="bi bi-arrow-left-right me-2"></i>Приём/Сдача смены
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item dropdown-item-inspection" href="#" id="addInspectionEvent"><i class="bi bi-binoculars me-2"></i>Обход и осмотр оборудования</a></li>
-                            <li><a class="dropdown-item dropdown-item-emergency" href="#" id="addEmergencyEvent"><i class="bi bi-exclamation-triangle me-2"></i>Аварийное событие</a></li>
-                            <li><a class="dropdown-item" href="#" id="addOtherEvent" data-bs-toggle="modal" data-bs-target="#addEntryModal"><i class="bi bi-three-dots me-2"></i>Прочие события</a></li>
-                        </ul>
+                        <div class="dropdown">
+                            <button class="btn btn-primary dropdown-toggle" type="button" id="eventTypeDropdown"
+                                data-bs-toggle="dropdown">
+                                <i class="bi bi-plus-circle me-2"></i>Добавить запись
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item dropdown-item-inspection" href="#"
+                                        id="addInspectionEvent"><i class="bi bi-binoculars me-2"></i>Обход и осмотр
+                                        оборудования</a></li>
+                                <li><a class="dropdown-item dropdown-item-emergency" href="#" id="addEmergencyEvent"><i
+                                            class="bi bi-exclamation-triangle me-2"></i>Аварийное событие</a></li>
+                                <li><a class="dropdown-item" href="#" id="addOtherEvent" data-bs-toggle="modal"
+                                        data-bs-target="#addEntryModal"><i class="bi bi-three-dots me-2"></i>Прочие
+                                        события</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Фильтры -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="row g-3 align-items-end">
+                            <!-- Поиск по тексту -->
+                            <div class="col-md-3">
+                                <label class="form-label small text-muted">Поиск</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                                    <input type="text" class="form-control" id="searchInput"
+                                        placeholder="Поиск по событиям...">
+                                </div>
+                            </div>
+
+                            <!-- Фильтр по дате -->
+                            <div class="col-md-3">
+                                <label class="form-label small text-muted">Дата от</label>
+                                <input type="date" class="form-control" id="dateFrom">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small text-muted">Дата до</label>
+                                <input type="date" class="form-control" id="dateTo">
+                            </div>
+
+                            <!-- Фильтр по типу события -->
+                            <div class="col-md-2">
+                                <label class="form-label small text-muted">Тип события</label>
+                                <select class="form-select" id="eventTypeFilter">
+                                    <option value="all">Все типы</option>
+                                    <option value="inspection">Обход</option>
+                                    <option value="emergency">Авария</option>
+                                    <option value="shift">Смена</option>
+                                    <option value="other">Прочее</option>
+                                </select>
+                            </div>
+
+                            <!-- Кнопка сброса -->
+                            <div class="col-md-1">
+                                <button class="btn btn-outline-secondary w-100" id="clearFiltersBtn">
+                                    <i class="bi bi-eraser"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--Таблицы-->
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-table me-2 text-secondary"></i>Все записи</span>
+                        <span class="badge bg-primary" id="recordsCount">0 записей</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 50px">#</th>
+                                        <th>Время начала</th>
+                                        <th>Время окончания</th>
+                                        <th>Тип события</th>
+                                        <th>Описание / Показания</th>
+                                        <th>ФИО Персонала</th>
+                                        <th style="width: 60px">Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableBody">
+                                    <tr>
+                                        <td colspan="7" class="text-center py-4">
+                                            <div class="spinner-border text-primary"></div> Загрузка...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Фильтры -->
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <div class="row g-3 align-items-end">
-                    <!-- Поиск по тексту -->
-                    <div class="col-md-3">
-                        <label class="form-label small text-muted">Поиск</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control" id="searchInput" placeholder="Поиск по событиям...">
-                        </div>
-                    </div>
-                    
-                    <!-- Фильтр по дате -->
-                    <div class="col-md-3">
-                        <label class="form-label small text-muted">Дата от</label>
-                        <input type="date" class="form-control" id="dateFrom">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label small text-muted">Дата до</label>
-                        <input type="date" class="form-control" id="dateTo">
-                    </div>
-                    
-                    <!-- Фильтр по типу события -->
-                    <div class="col-md-2">
-                        <label class="form-label small text-muted">Тип события</label>
-                        <select class="form-select" id="eventTypeFilter">
-                            <option value="all">Все типы</option>
-                            <option value="inspection">Обход</option>
-                            <option value="emergency">Авария</option>
-                            <option value="shift">Смена</option>
-                            <option value="other">Прочее</option>
-                        </select>
-                    </div>
-                    
-                    <!-- Кнопка сброса -->
-                    <div class="col-md-1">
-                        <button class="btn btn-outline-secondary w-100" id="clearFiltersBtn">
-                            <i class="bi bi-eraser"></i>
-                        </button>
-                    </div>
+    <!-- Модальное окно для прочих событий -->
+    <div class="modal fade" id="addEntryModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="bi bi-three-dots me-2"></i>Прочие события - новая запись</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!--Таблицы-->
-
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <span><i class="bi bi-table me-2 text-secondary"></i>Все записи</span>
-                    <span class="badge bg-primary" id="recordsCount">0 записей</span>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover table-bordered mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th style="width: 50px">#</th>
-                                    <th>Время начала</th>
-                                    <th>Время окончания</th>
-                                    <th>Тип события</th>
-                                    <th>Описание / Показания</th>
-                                    <th>ФИО Персонала</th>
-                                    <th style="width: 60px">Действия</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tableBody">
-                                <tr><td colspan="7" class="text-center py-4"><div class="spinner-border text-primary"></div> Загрузка...</td></tr>
-                            </tbody>
-                        </table>
+                <div class="row g-0">
+                    <div class="col-md-7">
+                        <form id="addForm">
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Время начала события</label>
+                                    <input type="datetime-local" class="form-control" id="startDatetime" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Время окончания события</label>
+                                    <input type="datetime-local" class="form-control" id="endDatetime" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Текст события</label>
+                                    <textarea class="form-control" id="eventText" rows="5"
+                                        placeholder="Опишите событие..." required></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">ФИО Персонала</label>
+                                    <input type="text" class="form-control" id="staffName" readonly>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                                <button type="submit" class="btn btn-primary">Сохранить</button>
+                            </div>
+                        </form>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Модальное окно для прочих событий -->
-<div class="modal fade" id="addEntryModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title"><i class="bi bi-three-dots me-2"></i>Прочие события - новая запись</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="row g-0">
-                <div class="col-md-7">
-                    <form id="addForm">
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label class="form-label">Время начала события</label>
-                                <input type="datetime-local" class="form-control" id="startDatetime" required>
+                    <div class="col-md-5">
+                        <div class="templates-sidebar">
+                            <div class="templates-title"><i class="bi bi-files me-2"></i>Шаблоны</div>
+                            <div class="template-item" onclick="insertTemplate(1)">
+                                <i class="bi bi-calendar-check"></i>
+                                <span class="template-text">Неисправности</span>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label">Время окончания события</label>
-                                <input type="datetime-local" class="form-control" id="endDatetime" required>
+                            <div class="template-item" onclick="insertTemplate(2)">
+                                <i class="bi bi-exclamation-circle"></i>
+                                <span class="template-text">Выполненные работы</span>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label">Текст события</label>
-                                <textarea class="form-control" id="eventText" rows="5" placeholder="Опишите событие..." required></textarea>
+                            <div class="template-item" onclick="insertTemplate(3)">
+                                <i class="bi bi-arrow-left-right"></i>
+                                <span class="template-text">Отключение/Включение оборудования</span>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label">ФИО Персонала</label>
-                                <input type="text" class="form-control" id="staffName" readonly>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                            <button type="submit" class="btn btn-primary">Сохранить</button>
-                        </div>
-                    </form>
-                </div>
-                <div class="col-md-5">
-                    <div class="templates-sidebar">
-                        <div class="templates-title"><i class="bi bi-files me-2"></i>Шаблоны</div>
-                        <div class="template-item" onclick="insertTemplate(1)">
-                            <i class="bi bi-calendar-check"></i>
-                            <span class="template-text">Неисправности</span>
-                        </div>
-                        <div class="template-item" onclick="insertTemplate(2)">
-                            <i class="bi bi-exclamation-circle"></i>
-                            <span class="template-text">Выполненные работы</span>
-                        </div>
-                        <div class="template-item" onclick="insertTemplate(3)">
-                            <i class="bi bi-arrow-left-right"></i>
-                            <span class="template-text">Отключение/Включение оборудования</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Модальное окно для обхода оборудования -->
-<div class="modal fade" id="inspectionModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title"><i class="bi bi-binoculars me-2"></i>Обход и осмотр оборудования</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+    <!-- Модальное окно для обхода оборудования -->
+    <div class="modal fade" id="inspectionModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="bi bi-binoculars me-2"></i>Обход и осмотр оборудования</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="inspectionForm">
+                    <div class="modal-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6"><label class="form-label">Время начала</label><input
+                                    type="datetime-local" class="form-control" id="inspectionStartDatetime" required>
+                            </div>
+                            <div class="col-md-6"><label class="form-label">Время окончания</label><input
+                                    type="datetime-local" class="form-control" id="inspectionEndDatetime" required>
+                            </div>
+                        </div>
+
+                        <div class="inspection-section">
+                            <div class="inspection-section-title"><i class="bi bi-fuel-pump me-2"></i>ГАЗ</div>
+                            <div class="measurement-group"><span class="measurement-label">Котельная:</span><input
+                                    type="number" step="0.01" class="form-control measurement-input" id="gasLow"><span
+                                    class="unit">м3</span></div>
+                            <div class="measurement-group"><span class="measurement-label">Среднее
+                                    давление:</span><input type="number" step="0.01"
+                                    class="form-control measurement-input" id="gasMedium"><span class="unit">м3</span>
+                            </div>
+                            <div class="measurement-group"><span class="measurement-label">Высокое
+                                    давление:</span><input type="number" step="0.01"
+                                    class="form-control measurement-input" id="gasHigh"><span class="unit">м3</span>
+                            </div>
+                        </div>
+
+                        <div class="inspection-section">
+                            <div class="inspection-section-title"><i class="bi bi-thermometer-half me-2"></i>ДГУ</div>
+                            <div class="measurement-group"><span class="measurement-label">Температура ОЖ
+                                    ДГУ:</span><input type="number" step="0.1" class="form-control measurement-input"
+                                    id="dguTemp"><span class="unit">°C</span></div>
+                        </div>
+
+                        <div class="inspection-section">
+                            <div class="inspection-section-title"><i class="bi bi-cpu me-2"></i>Температуры LVSR</div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="measurement-group"><span class="measurement-label">LVSR1:</span><input
+                                            type="number" step="0.1" class="form-control measurement-input"
+                                            id="lvsr1"><span class="unit">°C</span></div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="measurement-group"><span class="measurement-label">LVSR2:</span><input
+                                            type="number" step="0.1" class="form-control measurement-input"
+                                            id="lvsr2"><span class="unit">°C</span></div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="measurement-group"><span class="measurement-label">LVSR3:</span><input
+                                            type="number" step="0.1" class="form-control measurement-input"
+                                            id="lvsr3"><span class="unit">°C</span></div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="measurement-group"><span class="measurement-label">LVSR4:</span><input
+                                            type="number" step="0.1" class="form-control measurement-input"
+                                            id="lvsr4"><span class="unit">°C</span></div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="measurement-group"><span class="measurement-label">LVSR5:</span><input
+                                            type="number" step="0.1" class="form-control measurement-input"
+                                            id="lvsr5"><span class="unit">°C</span></div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="measurement-group"><span class="measurement-label">ДЭП:</span><input
+                                            type="number" step="0.1" class="form-control measurement-input"
+                                            id="debTemp"><span class="unit">°C</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="inspection-section">
+                            <div class="inspection-section-title"><i class="bi bi-droplet me-2"></i>Температуры систем
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="measurement-group"><span class="measurement-label">ОТ:</span><input
+                                            type="number" step="0.1" class="form-control measurement-input"
+                                            id="otTemp"><span class="unit">°C</span></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="measurement-group"><span class="measurement-label">ГВС:</span><input
+                                            type="number" step="0.1" class="form-control measurement-input"
+                                            id="gvsTemp"><span class="unit">°C</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="inspection-section">
+                            <div class="inspection-section-title"><i class="bi bi-building me-2"></i>Температуры
+                                помещений</div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="measurement-group"><span
+                                            class="measurement-label">РУ-0,4кВ:</span><input type="number" step="0.1"
+                                            class="form-control measurement-input" id="roomTempRU04"><span
+                                            class="unit">°C</span></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="measurement-group"><span class="measurement-label">РУ-10кВ:</span><input
+                                            type="number" step="0.1" class="form-control measurement-input"
+                                            id="roomTempRU10"><span class="unit">°C</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="inspection-section">
+                            <div class="inspection-section-title"><i class="bi bi-fire me-2"></i>ГВН</div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="measurement-group"><span class="measurement-label">ГВН №2а:</span><input
+                                            type="number" step="0.1" class="form-control measurement-input" id="gvn2a">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="measurement-group"><span class="measurement-label">ГВН №2б:</span><input
+                                            type="number" step="0.1" class="form-control measurement-input" id="gvn2b">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="measurement-group"><span class="measurement-label">ГВН №3:</span><input
+                                            type="number" step="0.1" class="form-control measurement-input" id="gvn3">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="measurement-group"><span class="measurement-label">ГВН №4:</span><input
+                                            type="number" step="0.1" class="form-control measurement-input" id="gvn4">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="measurement-group"><span class="measurement-label">ГВН №5:</span><input
+                                            type="number" step="0.1" class="form-control measurement-input" id="gvn5">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="measurement-group"><span class="measurement-label">ГВН №6:</span><input
+                                            type="number" step="0.1" class="form-control measurement-input" id="gvn6">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3"><label class="form-label">ФИО Персонала</label><input type="text"
+                                class="form-control" id="inspectionStaffName" readonly></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-primary">Сохранить</button>
+                    </div>
+                </form>
             </div>
-            <form id="inspectionForm">
+        </div>
+    </div>
+
+    <!-- Модальное окно для аварийных событий -->
+    <div class="modal fade" id="emergencyModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: var(--corporate-red); color: white;">
+                    <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Аварийное событие</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="row g-0">
+                    <div class="col-md-7">
+                        <form id="emergencyForm">
+                            <div class="modal-body">
+                                <div class="alert alert-danger mb-3"><i
+                                        class="bi bi-exclamation-triangle-fill me-2"></i><strong>Внимание!</strong>
+                                    Заполните все поля максимально подробно.</div>
+                                <div class="mb-3"><label class="form-label">Время начала</label><input
+                                        type="datetime-local" class="form-control" id="emergencyStartDatetime" required>
+                                </div>
+                                <div class="mb-3"><label class="form-label">Время окончания</label><input
+                                        type="datetime-local" class="form-control" id="emergencyEndDatetime" required>
+                                </div>
+                                <div class="mb-3"><label class="form-label">Тип аварии</label><select
+                                        class="form-select" id="emergencyType" required>
+                                        <option value="">-- Выберите тип --</option>
+                                        <option value="equipment">Отказ оборудования</option>
+                                        <option value="power">Отключение электроэнергии</option>
+                                        <option value="water">Авария водоснабжения</option>
+                                        <option value="fire">Пожар / Задымление</option>
+                                        <option value="gas">Утечка газа</option>
+                                        <option value="other">Прочее</option>
+                                    </select></div>
+                                <div class="mb-3"><label class="form-label">Описание аварии</label><textarea
+                                        class="form-control" id="emergencyDescription" rows="4" required></textarea>
+                                </div>
+                                <div class="mb-3"><label class="form-label">Принятые меры</label><textarea
+                                        class="form-control" id="emergencyActions" rows="3"></textarea></div>
+                                <div class="mb-3"><label class="form-label">Привлечённые службы</label><input
+                                        type="text" class="form-control" id="emergencyServices"></div>
+                                <div class="mb-3"><label class="form-label">ФИО Персонала</label><input type="text"
+                                        class="form-control" id="emergencyStaffName" readonly></div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                                <button type="submit" class="btn"
+                                    style="background-color: var(--corporate-red); color: white;">Зарегистрировать
+                                    аварию</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="templates-sidebar">
+                            <div class="templates-title"><i class="bi bi-files me-2"></i>Шаблоны аварий</div>
+                            <div class="template-item" onclick="insertEmergencyTemplate(1)"><i
+                                    class="bi bi-lightning-charge"></i><span class="template-text">Отключение
+                                    электроэнергии</span></div>
+                            <div class="template-item" onclick="insertEmergencyTemplate(2)"><i
+                                    class="bi bi-droplet"></i><span class="template-text">Авария водоснабжения</span>
+                            </div>
+                            <div class="template-item" onclick="insertEmergencyTemplate(3)"><i
+                                    class="bi bi-fire"></i><span class="template-text">Пожар / Задымление</span></div>
+                            <div class="template-item" onclick="insertEmergencyTemplate(4)"><i
+                                    class="bi bi-gear-wide-connected"></i><span class="template-text">Отказ
+                                    оборудования</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для смены -->
+    <div class="modal fade" id="shiftModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="bi bi-arrow-left-right me-2"></i>Приём/Сдача смены</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
                 <div class="modal-body">
-                    <div class="row mb-3">
-                        <div class="col-md-6"><label class="form-label">Время начала</label><input type="datetime-local" class="form-control" id="inspectionStartDatetime" required></div>
-                        <div class="col-md-6"><label class="form-label">Время окончания</label><input type="datetime-local" class="form-control" id="inspectionEndDatetime" required></div>
+                    <div class="shift-info">
+                        <p class="mb-2">Текущий дежурный:</p>
+                        <p class="current-staff" id="currentShiftStaff">Не выбран</p>
                     </div>
-
-                    <div class="inspection-section">
-                        <div class="inspection-section-title"><i class="bi bi-fuel-pump me-2"></i>ГАЗ</div>
-                        <div class="measurement-group"><span class="measurement-label">Котельная:</span><input type="number" step="0.01" class="form-control measurement-input" id="gasLow"><span class="unit">м3</span></div>
-                        <div class="measurement-group"><span class="measurement-label">Среднее давление:</span><input type="number" step="0.01" class="form-control measurement-input" id="gasMedium"><span class="unit">м3</span></div>
-                        <div class="measurement-group"><span class="measurement-label">Высокое давление:</span><input type="number" step="0.01" class="form-control measurement-input" id="gasHigh"><span class="unit">м3</span></div>
-                    </div>
-
-                    <div class="inspection-section">
-                        <div class="inspection-section-title"><i class="bi bi-thermometer-half me-2"></i>ДГУ</div>
-                        <div class="measurement-group"><span class="measurement-label">Температура ОЖ ДГУ:</span><input type="number" step="0.1" class="form-control measurement-input" id="dguTemp"><span class="unit">°C</span></div>
-                    </div>
-
-                    <div class="inspection-section">
-                        <div class="inspection-section-title"><i class="bi bi-cpu me-2"></i>Температуры LVSR</div>
-                        <div class="row">
-                            <div class="col-md-4"><div class="measurement-group"><span class="measurement-label">LVSR1:</span><input type="number" step="0.1" class="form-control measurement-input" id="lvsr1"><span class="unit">°C</span></div></div>
-                            <div class="col-md-4"><div class="measurement-group"><span class="measurement-label">LVSR2:</span><input type="number" step="0.1" class="form-control measurement-input" id="lvsr2"><span class="unit">°C</span></div></div>
-                            <div class="col-md-4"><div class="measurement-group"><span class="measurement-label">LVSR3:</span><input type="number" step="0.1" class="form-control measurement-input" id="lvsr3"><span class="unit">°C</span></div></div>
-                            <div class="col-md-4"><div class="measurement-group"><span class="measurement-label">LVSR4:</span><input type="number" step="0.1" class="form-control measurement-input" id="lvsr4"><span class="unit">°C</span></div></div>
-                            <div class="col-md-4"><div class="measurement-group"><span class="measurement-label">LVSR5:</span><input type="number" step="0.1" class="form-control measurement-input" id="lvsr5"><span class="unit">°C</span></div></div>
-                            <div class="col-md-4"><div class="measurement-group"><span class="measurement-label">ДЭП:</span><input type="number" step="0.1" class="form-control measurement-input" id="debTemp"><span class="unit">°C</span></div></div>
-                        </div>
-                    </div>
-
-                    <div class="inspection-section">
-                        <div class="inspection-section-title"><i class="bi bi-droplet me-2"></i>Температуры систем</div>
-                        <div class="row">
-                            <div class="col-md-6"><div class="measurement-group"><span class="measurement-label">ОТ:</span><input type="number" step="0.1" class="form-control measurement-input" id="otTemp"><span class="unit">°C</span></div></div>
-                            <div class="col-md-6"><div class="measurement-group"><span class="measurement-label">ГВС:</span><input type="number" step="0.1" class="form-control measurement-input" id="gvsTemp"><span class="unit">°C</span></div></div>
-                        </div>
-                    </div>
-
-                    <div class="inspection-section">
-                        <div class="inspection-section-title"><i class="bi bi-building me-2"></i>Температуры помещений</div>
-                        <div class="row">
-                            <div class="col-md-6"><div class="measurement-group"><span class="measurement-label">РУ-0,4кВ:</span><input type="number" step="0.1" class="form-control measurement-input" id="roomTempRU04"><span class="unit">°C</span></div></div>
-                            <div class="col-md-6"><div class="measurement-group"><span class="measurement-label">РУ-10кВ:</span><input type="number" step="0.1" class="form-control measurement-input" id="roomTempRU10"><span class="unit">°C</span></div></div>
-                        </div>
-                    </div>
-
-                    <div class="inspection-section">
-                        <div class="inspection-section-title"><i class="bi bi-fire me-2"></i>ГВН</div>
-                        <div class="row">
-                            <div class="col-md-4"><div class="measurement-group"><span class="measurement-label">ГВН №2а:</span><input type="number" step="0.1" class="form-control measurement-input" id="gvn2a"></div></div>
-                            <div class="col-md-4"><div class="measurement-group"><span class="measurement-label">ГВН №2б:</span><input type="number" step="0.1" class="form-control measurement-input" id="gvn2b"></div></div>
-                            <div class="col-md-4"><div class="measurement-group"><span class="measurement-label">ГВН №3:</span><input type="number" step="0.1" class="form-control measurement-input" id="gvn3"></div></div>
-                            <div class="col-md-4"><div class="measurement-group"><span class="measurement-label">ГВН №4:</span><input type="number" step="0.1" class="form-control measurement-input" id="gvn4"></div></div>
-                            <div class="col-md-4"><div class="measurement-group"><span class="measurement-label">ГВН №5:</span><input type="number" step="0.1" class="form-control measurement-input" id="gvn5"></div></div>
-                            <div class="col-md-4"><div class="measurement-group"><span class="measurement-label">ГВН №6:</span><input type="number" step="0.1" class="form-control measurement-input" id="gvn6"></div></div>
-                        </div>
-                    </div>
-
-                    <div class="mb-3"><label class="form-label">ФИО Персонала</label><input type="text" class="form-control" id="inspectionStaffName" readonly></div>
+                    <div class="mb-3"><label class="form-label">Выберите принимающего смену:</label><select
+                            class="form-select" id="incomingStaffSelect" required>
+                            <option value="">-- Выберите --</option>
+                        </select></div>
+                    <div class="mb-3"><label class="form-label">Дата и время смены</label><input type="datetime-local"
+                            class="form-control" id="shiftDatetime" required></div>
+                    <div class="alert alert-info"><i class="bi bi-info-circle me-2"></i>После подтверждения в журнале
+                        появится запись.</div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-primary">Сохранить</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Модальное окно для аварийных событий -->
-<div class="modal fade" id="emergencyModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header" style="background-color: var(--corporate-red); color: white;">
-                <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Аварийное событие</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="row g-0">
-                <div class="col-md-7">
-                    <form id="emergencyForm">
-                        <div class="modal-body">
-                            <div class="alert alert-danger mb-3"><i class="bi bi-exclamation-triangle-fill me-2"></i><strong>Внимание!</strong> Заполните все поля максимально подробно.</div>
-                            <div class="mb-3"><label class="form-label">Время начала</label><input type="datetime-local" class="form-control" id="emergencyStartDatetime" required></div>
-                            <div class="mb-3"><label class="form-label">Время окончания</label><input type="datetime-local" class="form-control" id="emergencyEndDatetime" required></div>
-                            <div class="mb-3"><label class="form-label">Тип аварии</label><select class="form-select" id="emergencyType" required><option value="">-- Выберите тип --</option><option value="equipment">Отказ оборудования</option><option value="power">Отключение электроэнергии</option><option value="water">Авария водоснабжения</option><option value="fire">Пожар / Задымление</option><option value="gas">Утечка газа</option><option value="other">Прочее</option></select></div>
-                            <div class="mb-3"><label class="form-label">Описание аварии</label><textarea class="form-control" id="emergencyDescription" rows="4" required></textarea></div>
-                            <div class="mb-3"><label class="form-label">Принятые меры</label><textarea class="form-control" id="emergencyActions" rows="3"></textarea></div>
-                            <div class="mb-3"><label class="form-label">Привлечённые службы</label><input type="text" class="form-control" id="emergencyServices"></div>
-                            <div class="mb-3"><label class="form-label">ФИО Персонала</label><input type="text" class="form-control" id="emergencyStaffName" readonly></div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                            <button type="submit" class="btn" style="background-color: var(--corporate-red); color: white;">Зарегистрировать аварию</button>
-                        </div>
-                    </form>
-                </div>
-                <div class="col-md-5">
-                    <div class="templates-sidebar">
-                        <div class="templates-title"><i class="bi bi-files me-2"></i>Шаблоны аварий</div>
-                        <div class="template-item" onclick="insertEmergencyTemplate(1)"><i class="bi bi-lightning-charge"></i><span class="template-text">Отключение электроэнергии</span></div>
-                        <div class="template-item" onclick="insertEmergencyTemplate(2)"><i class="bi bi-droplet"></i><span class="template-text">Авария водоснабжения</span></div>
-                        <div class="template-item" onclick="insertEmergencyTemplate(3)"><i class="bi bi-fire"></i><span class="template-text">Пожар / Задымление</span></div>
-                        <div class="template-item" onclick="insertEmergencyTemplate(4)"><i class="bi bi-gear-wide-connected"></i><span class="template-text">Отказ оборудования</span></div>
-                    </div>
+                    <button type="button" class="btn btn-success" id="confirmShiftBtn">Подтвердить</button>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Модальное окно для смены -->
-<div class="modal fade" id="shiftModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title"><i class="bi bi-arrow-left-right me-2"></i>Приём/Сдача смены</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="shift-info"><p class="mb-2">Текущий дежурный:</p><p class="current-staff" id="currentShiftStaff">Не выбран</p></div>
-                <div class="mb-3"><label class="form-label">Выберите принимающего смену:</label><select class="form-select" id="incomingStaffSelect" required><option value="">-- Выберите --</option></select></div>
-                <div class="mb-3"><label class="form-label">Дата и время смены</label><input type="datetime-local" class="form-control" id="shiftDatetime" required></div>
-                <div class="alert alert-info"><i class="bi bi-info-circle me-2"></i>После подтверждения в журнале появится запись.</div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                <button type="button" class="btn btn-success" id="confirmShiftBtn">Подтвердить</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/api.js"></script>
-<script src="js/main.js"></script>
-<script src="js/journal.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/journal.js"></script>
 </body>
+
 </html>

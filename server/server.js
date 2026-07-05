@@ -1,9 +1,10 @@
 const express = require('express');
-const { Pool } = require('pg');
+const initSqlJs = require('sql.js');
+const fs = require('fs');
+const path = require('path');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -11,98 +12,127 @@ const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this';
 const HOST = '0.0.0.0';
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Подключение к PostgreSQL
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false }
-});
+// ========== БАЗА ДАННЫХ (sql.js) ==========
+const DB_PATH = path.join(__dirname, 'database.sqlite');
+let db = null;
 
-// ========== ИНИЦИАЛИЗАЦИЯ ТАБЛИЦ ==========
+// Функция для выполнения SQL-запросов (возвращает массив объектов)
+function dbQuery(sql, params = []) {
+    const stmt = db.prepare(sql);
+    stmt.bind(params);
+    const results = [];
+    while (stmt.step()) {
+        results.push(stmt.getAsObject());
+    }
+    stmt.free();
+    return results;
+}
+
+// Функция для выполнения SQL-команд (INSERT, UPDATE, DELETE)
+function dbRun(sql, params = []) {
+    const stmt = db.prepare(sql);
+    stmt.bind(params);
+    stmt.step();
+    stmt.free();
+    saveDatabase();
+}
+
+// Функция для получения одной записи
+function dbGet(sql, params = []) {
+    const stmt = db.prepare(sql);
+    stmt.bind(params);
+    if (stmt.step()) {
+        const result = stmt.getAsObject();
+        stmt.free();
+        return result;
+    }
+    stmt.free();
+    return null;
+}
+
+// Сохранение БД в файл
+function saveDatabase() {
+    const data = db.export();
+    const buffer = Buffer.from(data);
+    fs.writeFileSync(DB_PATH, buffer);
+}
+
+// Инициализация БД
 async function initDatabase() {
-    console.log('🔄 Инициализация базы данных PostgreSQL...');
+    const SQL = await initSqlJs();
+    let dbData = null;
+    if (fs.existsSync(DB_PATH)) {
+        dbData = fs.readFileSync(DB_PATH);
+    }
+    db = new SQL.Database(dbData);
     
-    // Таблица пользователей
-    await pool.query(`
+    console.log('🔄 Инициализация базы данных...');
+    
+    // Создаём таблицы
+    dbRun(`
         CREATE TABLE IF NOT EXISTS users (
-            id SERIAL PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE NOT NULL,
             password TEXT NOT NULL,
             full_name TEXT NOT NULL,
             role TEXT DEFAULT 'viewer',
             is_shared INTEGER DEFAULT 0,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     `);
     
-    // Таблица сменных дежурных
-    await pool.query(`
+    dbRun(`
         CREATE TABLE IF NOT EXISTS shift_staff (
-            id SERIAL PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             shift_name TEXT NOT NULL,
             is_active INTEGER DEFAULT 1,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     `);
     
-    // Таблица активных сессий (для ограничения одного входа)
-    await pool.query(`
+    dbRun(`
         CREATE TABLE IF NOT EXISTS active_sessions (
-            id SERIAL PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
             token TEXT NOT NULL,
             device_info TEXT,
-            login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            login_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+            last_activity DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     `);
     
-    // Таблица сессий (JWT)
-    await pool.query(`
+    dbRun(`
         CREATE TABLE IF NOT EXISTS sessions (
-            id SERIAL PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
             token TEXT NOT NULL,
-            expires_at TIMESTAMP NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            expires_at DATETIME NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     `);
     
-    // Таблица журнала дежурств
-    await pool.query(`
-CREATE TABLE IF NOT EXISTS journal_entries (
-    id TEXT PRIMARY KEY,
-    start_datetime TEXT NOT NULL,      -- дата и время начала (ISO)
-    end_datetime TEXT NOT NULL,        -- дата и время окончания (ISO)
-    event_text TEXT NOT NULL,
-    staff_name TEXT NOT NULL,
-    event_type TEXT NOT NULL,
-    inspection_readings TEXT,
-    shift_from TEXT,
-    shift_to TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)
-    `);
-    
-    // Таблица отпусков (не используется, но оставим)
-    await pool.query(`
-        CREATE TABLE IF NOT EXISTS vacations (
+    dbRun(`
+        CREATE TABLE IF NOT EXISTS journal_entries (
             id TEXT PRIMARY KEY,
-            staff_id INTEGER NOT NULL,
-            type TEXT NOT NULL,
-            start_date TEXT NOT NULL,
-            end_date TEXT NOT NULL,
-            comment TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            start_datetime TEXT NOT NULL,
+            end_datetime TEXT NOT NULL,
+            event_text TEXT NOT NULL,
+            staff_name TEXT NOT NULL,
+            event_type TEXT NOT NULL,
+            inspection_readings TEXT,
+            shift_from TEXT,
+            shift_to TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     `);
     
-    // Таблица дней рождения
-    await pool.query(`
+    dbRun(`
         CREATE TABLE IF NOT EXISTS birthdays (
             id TEXT PRIMARY KEY,
             name TEXT NOT NULL,
@@ -110,24 +140,24 @@ CREATE TABLE IF NOT EXISTS journal_entries (
             position TEXT,
             department TEXT,
             created_at TEXT NOT NULL,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     `);
     
     // Создаём пользователей
     const users = [
-        { username: 'master', password: 'master123', full_name: 'Мастер', role: 'master', is_shared: 0 },
-        { username: 'operator', password: 'operator123', full_name: 'Инженер-энергетик', role: 'operator', is_shared: 0 },
-        { username: 'viewer', password: 'viewer123', full_name: 'Только просмотр', role: 'viewer', is_shared: 0 }
+        { username: 'master', password: 'master123', full_name: 'Мастер', role: 'master' },
+        { username: 'operator', password: 'operator123', full_name: 'Инженер-энергетик', role: 'operator' },
+        { username: 'viewer', password: 'viewer123', full_name: 'Только просмотр', role: 'viewer' }
     ];
     
     for (const user of users) {
-        const existing = await pool.query('SELECT * FROM users WHERE username = $1', [user.username]);
-        if (existing.rows.length === 0) {
+        const existing = dbGet('SELECT * FROM users WHERE username = ?', [user.username]);
+        if (!existing) {
             const hashedPassword = bcrypt.hashSync(user.password, 10);
-            await pool.query(
-                'INSERT INTO users (username, password, full_name, role, is_shared) VALUES ($1, $2, $3, $4, $5)',
-                [user.username, hashedPassword, user.full_name, user.role, user.is_shared]
+            dbRun(
+                `INSERT INTO users (username, password, full_name, role, is_shared) VALUES (?, ?, ?, ?, ?)`,
+                [user.username, hashedPassword, user.full_name, user.role, 0]
             );
         }
     }
@@ -142,19 +172,17 @@ CREATE TABLE IF NOT EXISTS journal_entries (
     ];
     
     for (const staff of shiftStaffList) {
-        const existing = await pool.query('SELECT * FROM shift_staff WHERE name = $1', [staff.name]);
-        if (existing.rows.length === 0) {
-            await pool.query(
-                'INSERT INTO shift_staff (name, shift_name) VALUES ($1, $2)',
-                [staff.name, staff.shift_name]
-            );
+        const existing = dbGet('SELECT * FROM shift_staff WHERE name = ?', [staff.name]);
+        if (!existing) {
+            dbRun('INSERT INTO shift_staff (name, shift_name) VALUES (?, ?)', [staff.name, staff.shift_name]);
         }
     }
     
-    console.log('✅ База данных PostgreSQL инициализирована');
+    console.log('✅ База данных инициализирована');
 }
 
-// ========== MIDDLEWARE АУТЕНТИФИКАЦИИ С ПРОВЕРКОЙ АКТИВНОЙ СЕССИИ ==========
+// ========== MIDDLEWARE ==========
+
 async function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -167,21 +195,12 @@ async function authenticateToken(req, res, next) {
         const user = jwt.verify(token, JWT_SECRET);
         req.user = user;
         
-        // Проверяем, существует ли активная сессия для этого токена
-        const activeSession = await pool.query(
-            'SELECT * FROM active_sessions WHERE token = $1',
-            [token]
-        );
-        
-        if (activeSession.rows.length === 0) {
-            return res.status(401).json({ error: 'Сессия завершена. Войдите заново.' });
+        const activeSession = dbGet('SELECT * FROM active_sessions WHERE token = ?', [token]);
+        if (!activeSession) {
+            return res.status(401).json({ error: 'Сессия завершена' });
         }
         
-        // Обновляем время последней активности
-        await pool.query(
-            'UPDATE active_sessions SET last_activity = NOW() WHERE token = $1',
-            [token]
-        );
+        dbRun('UPDATE active_sessions SET last_activity = CURRENT_TIMESTAMP WHERE token = ?', [token]);
         
         next();
     } catch (error) {
@@ -189,22 +208,21 @@ async function authenticateToken(req, res, next) {
     }
 }
 
-// ========== ПРОВЕРКА ПРАВ ==========
 function canWriteJournal(req, res, next) {
     if (req.user.role !== 'operator') {
-        return res.status(403).json({ error: 'Доступ запрещён. Только операторы могут редактировать журнал.' });
+        return res.status(403).json({ error: 'Доступ запрещён' });
     }
     next();
 }
 
 function canEditBirthdays(req, res, next) {
     if (req.user.role !== 'master') {
-        return res.status(403).json({ error: 'Доступ запрещён. Только мастер может редактировать дни рождения.' });
+        return res.status(403).json({ error: 'Доступ запрещён' });
     }
     next();
 }
 
-// ========== API АУТЕНТИФИКАЦИИ ==========
+// ========== API ==========
 
 app.post('/api/login', async (req, res) => {
     const { username, password, shiftStaffId, rememberMe } = req.body;
@@ -213,30 +231,21 @@ app.post('/api/login', async (req, res) => {
         return res.status(400).json({ error: 'Введите логин и пароль' });
     }
     
-    const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+    const user = dbGet('SELECT * FROM users WHERE username = ?', [username]);
     
-    if (result.rows.length === 0) {
+    if (!user) {
         return res.status(401).json({ error: 'Неверный логин или пароль' });
     }
     
-    const user = result.rows[0];
     const isValidPassword = bcrypt.compareSync(password, user.password);
-    
     if (!isValidPassword) {
         return res.status(401).json({ error: 'Неверный логин или пароль' });
     }
     
-    // Ограничение для оператора
     if (user.role === 'operator') {
-        const activeSession = await pool.query(
-            'SELECT * FROM active_sessions WHERE user_id = $1',
-            [user.id]
-        );
-        
-        if (activeSession.rows.length > 0) {
-            return res.status(403).json({ 
-                error: 'Учётная запись уже используется на другом устройстве. Выйдите там.' 
-            });
+        const activeSession = dbGet('SELECT * FROM active_sessions WHERE user_id = ?', [user.id]);
+        if (activeSession) {
+            return res.status(403).json({ error: 'Учётная запись уже используется на другом устройстве. Выйдите там.' });
         }
     }
     
@@ -245,23 +254,19 @@ app.post('/api/login', async (req, res) => {
         if (!shiftStaffId) {
             return res.status(400).json({ error: 'Выберите сменного сотрудника', needShiftStaff: true });
         }
-        const staffResult = await pool.query('SELECT * FROM shift_staff WHERE id = $1', [shiftStaffId]);
-        if (staffResult.rows.length === 0) {
+        selectedStaff = dbGet('SELECT * FROM shift_staff WHERE id = ?', [shiftStaffId]);
+        if (!selectedStaff) {
             return res.status(400).json({ error: 'Неверный выбор сотрудника' });
         }
-        selectedStaff = staffResult.rows[0];
     }
     
-    // ⭐ ВАЖНО: выбираем срок жизни токена
     const expiresIn = rememberMe ? '30d' : '24h';
-    
     const token = jwt.sign(
         { 
             id: user.id, 
             username: user.username, 
             role: user.role,
             fullName: user.full_name,
-            isShared: user.is_shared === 1,
             shiftStaffId: selectedStaff?.id || null,
             shiftStaffName: selectedStaff?.name || null
         },
@@ -272,18 +277,12 @@ app.post('/api/login', async (req, res) => {
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + (rememberMe ? 720 : 24));
     
-    // Сохраняем сессию
-    await pool.query(
-        'INSERT INTO sessions (user_id, token, expires_at) VALUES ($1, $2, $3)',
-        [user.id, token, expiresAt]
-    );
+    dbRun('INSERT INTO sessions (user_id, token, expires_at) VALUES (?, ?, ?)', 
+        [user.id, token, expiresAt.toISOString()]);
     
-    // Сохраняем активную сессию
     const deviceInfo = req.headers['user-agent'] || 'неизвестно';
-    await pool.query(
-        'INSERT INTO active_sessions (user_id, token, device_info) VALUES ($1, $2, $3)',
-        [user.id, token, deviceInfo]
-    );
+    dbRun('INSERT INTO active_sessions (user_id, token, device_info) VALUES (?, ?, ?)',
+        [user.id, token, deviceInfo]);
     
     res.json({
         success: true,
@@ -293,7 +292,6 @@ app.post('/api/login', async (req, res) => {
             username: user.username,
             fullName: user.full_name,
             role: user.role,
-            isShared: user.is_shared === 1,
             shiftStaffId: selectedStaff?.id || null,
             shiftStaffName: selectedStaff?.name || null
         }
@@ -304,12 +302,8 @@ app.post('/api/logout', authenticateToken, async (req, res) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader.split(' ')[1];
     
-    // Получаем user_id из токена
-    const decoded = jwt.verify(token, JWT_SECRET);
-    
-    // Удаляем все сессии этого пользователя
-    await pool.query('DELETE FROM active_sessions WHERE user_id = $1', [decoded.id]);
-    await pool.query('DELETE FROM sessions WHERE user_id = $1', [decoded.id]);
+    dbRun('DELETE FROM active_sessions WHERE token = ?', [token]);
+    dbRun('DELETE FROM sessions WHERE token = ?', [token]);
     
     res.json({ success: true });
 });
@@ -319,64 +313,55 @@ app.get('/api/me', authenticateToken, (req, res) => {
 });
 
 app.get('/api/shift-staff', async (req, res) => {
-    const result = await pool.query('SELECT id, name, shift_name FROM shift_staff WHERE is_active = 1');
-    res.json(result.rows);
+    const staff = dbQuery('SELECT id, name, shift_name FROM shift_staff WHERE is_active = 1');
+    res.json(staff);
 });
 
-// ========== API ЖУРНАЛА ==========
-
 app.get('/api/journal', authenticateToken, async (req, res) => {
-    const result = await pool.query('SELECT * FROM journal_entries ORDER BY start_datetime DESC');
-    res.json(result.rows);
+    const entries = await db.prepare('SELECT * FROM journal_entries ORDER BY end_datetime DESC').all();
+    res.json(entries);
 });
 
 app.post('/api/journal', authenticateToken, canWriteJournal, async (req, res) => {
     const { id, startDatetime, endDatetime, eventText, staffName, eventType, inspectionReadings, shiftFrom, shiftTo } = req.body;
     
-    await pool.query(
-        `INSERT INTO journal_entries 
-         (id, start_datetime, end_datetime, event_text, staff_name, event_type, inspection_readings, shift_from, shift_to)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-        [id, startDatetime, endDatetime, eventText, staffName, eventType, JSON.stringify(inspectionReadings), shiftFrom, shiftTo]
-    );
+    dbRun(`
+        INSERT INTO journal_entries 
+        (id, start_datetime, end_datetime, event_text, staff_name, event_type, inspection_readings, shift_from, shift_to)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [id, startDatetime, endDatetime, eventText, staffName, eventType, JSON.stringify(inspectionReadings), shiftFrom, shiftTo]);
     
     res.json({ success: true, id });
 });
 
 app.delete('/api/journal/:id', authenticateToken, canWriteJournal, async (req, res) => {
-    await pool.query('DELETE FROM journal_entries WHERE id = $1', [req.params.id]);
+    dbRun('DELETE FROM journal_entries WHERE id = ?', [req.params.id]);
     res.json({ success: true });
 });
 
-// ========== API ДНЕЙ РОЖДЕНИЯ ==========
-
-// app.get('/api/birthdays', authenticateToken, async (req, res) => {
-//     const result = await pool.query('SELECT * FROM birthdays');
-//     res.json(result.rows);
-// });
-
-// app.post('/api/birthdays', authenticateToken, canEditBirthdays, async (req, res) => {
-//     const { id, name, birthDate, position, department, createdAt } = req.body;
-//     await pool.query(
-//         'INSERT INTO birthdays (id, name, birth_date, position, department, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-//         [id, name, birthDate, position, department, createdAt || new Date().toISOString(), new Date()]
-//     );
-//     res.json({ success: true, id });
-// });
-
-// app.delete('/api/birthdays/:id', authenticateToken, canEditBirthdays, async (req, res) => {
-//     await pool.query('DELETE FROM birthdays WHERE id = $1', [req.params.id]);
-//     res.json({ success: true });
-// });
-
-app.get('/api/users', async (req, res) => {
-    const result = await pool.query('SELECT id, username, full_name, role, is_shared FROM users');
-    res.json(result.rows);
+app.get('/api/birthdays', authenticateToken, async (req, res) => {
+    const birthdays = dbQuery('SELECT * FROM birthdays');
+    res.json(birthdays);
 });
 
-// Специальный эндпоинт для пинга (возвращает минимум данных)
-app.get('/ping', (req, res) => {
-    res.status(200).send('ok');
+app.post('/api/birthdays', authenticateToken, canEditBirthdays, async (req, res) => {
+    const { id, name, birthDate, position, department, createdAt } = req.body;
+    dbRun(`
+        INSERT INTO birthdays (id, name, birth_date, position, department, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+    `, [id, name, birthDate, position, department, createdAt || new Date().toISOString()]);
+    
+    res.json({ success: true, id });
+});
+
+app.delete('/api/birthdays/:id', authenticateToken, canEditBirthdays, async (req, res) => {
+    dbRun('DELETE FROM birthdays WHERE id = ?', [req.params.id]);
+    res.json({ success: true });
+});
+
+app.get('/api/users', async (req, res) => {
+    const users = dbQuery('SELECT id, username, full_name, role, is_shared FROM users');
+    res.json(users);
 });
 
 // ========== ЗАПУСК ==========
@@ -384,7 +369,7 @@ initDatabase().then(() => {
     app.listen(PORT, HOST, () => {
         console.log(`\n🚀 Сервер запущен на http://${HOST}:${PORT}`);
         console.log(`👥 Пользователи: master/master123, operator/operator123, viewer/viewer123`);
-        console.log(`🔒 Оператор может войти только с одного устройства\n`);
+        console.log(`💾 База данных: ${DB_PATH}\n`);
     });
 }).catch(err => {
     console.error('Ошибка инициализации БД:', err);

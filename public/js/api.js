@@ -1,4 +1,4 @@
-// API модуль (без переопределения fetch, чтобы не конфликтовать с auth.js)
+// API модуль
 const API_BASE = '';
 
 async function apiGetJournal() {
@@ -70,5 +70,15 @@ async function apiDeleteBirthday(id) {
 async function apiGetUsers() {
     const response = await fetch(`${API_BASE}/api/users`);
     if (!response.ok) throw new Error('Ошибка загрузки пользователей');
+    return response.json();
+}
+
+async function apiLogin(username, password) {
+    const response = await fetch(`${API_BASE}/api/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+    });
+    if (!response.ok) throw new Error('Ошибка входа');
     return response.json();
 }
