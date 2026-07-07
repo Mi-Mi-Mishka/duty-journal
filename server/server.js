@@ -1,10 +1,9 @@
 const express = require('express');
-const initSqlJs = require('sql.js');
-const fs = require('fs');
-const path = require('path');
+const { Pool } = require('pg');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -12,112 +11,69 @@ const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this';
 const HOST = '0.0.0.0';
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
-// ========== БАЗА ДАННЫХ (sql.js) ==========
-const DB_PATH = path.join(__dirname, 'database.sqlite');
-let db = null;
+// ========== ПОДКЛЮЧЕНИЕ К POSTGRESQL ==========
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+});
 
-// Функция для выполнения SQL-запросов (возвращает массив объектов)
-function dbQuery(sql, params = []) {
-    const stmt = db.prepare(sql);
-    stmt.bind(params);
-    const results = [];
-    while (stmt.step()) {
-        results.push(stmt.getAsObject());
-    }
-    stmt.free();
-    return results;
-}
-
-// Функция для выполнения SQL-команд (INSERT, UPDATE, DELETE)
-function dbRun(sql, params = []) {
-    const stmt = db.prepare(sql);
-    stmt.bind(params);
-    stmt.step();
-    stmt.free();
-    saveDatabase();
-}
-
-// Функция для получения одной записи
-function dbGet(sql, params = []) {
-    const stmt = db.prepare(sql);
-    stmt.bind(params);
-    if (stmt.step()) {
-        const result = stmt.getAsObject();
-        stmt.free();
-        return result;
-    }
-    stmt.free();
-    return null;
-}
-
-// Сохранение БД в файл
-function saveDatabase() {
-    const data = db.export();
-    const buffer = Buffer.from(data);
-    fs.writeFileSync(DB_PATH, buffer);
-}
-
-// Инициализация БД
+// ========== ИНИЦИАЛИЗАЦИЯ БАЗЫ ДАННЫХ ==========
 async function initDatabase() {
-    const SQL = await initSqlJs();
-    let dbData = null;
-    if (fs.existsSync(DB_PATH)) {
-        dbData = fs.readFileSync(DB_PATH);
-    }
-    db = new SQL.Database(dbData);
+    console.log('🔄 Инициализация базы данных PostgreSQL...');
     
-    console.log('🔄 Инициализация базы данных...');
-    
-    // Создаём таблицы
-    dbRun(`
+    // Таблица пользователей
+    await pool.query(`
         CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             username TEXT UNIQUE NOT NULL,
             password TEXT NOT NULL,
             full_name TEXT NOT NULL,
-            role TEXT DEFAULT 'viewer',
+            role TEXT DEFAULT 'operator',
             is_shared INTEGER DEFAULT 0,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     `);
     
-    dbRun(`
+    // Таблица сменных дежурных
+    await pool.query(`
         CREATE TABLE IF NOT EXISTS shift_staff (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             name TEXT NOT NULL,
             shift_name TEXT NOT NULL,
             is_active INTEGER DEFAULT 1,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     `);
     
-    dbRun(`
+    // Таблица сессий
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS sessions (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            token TEXT NOT NULL,
+            expires_at TIMESTAMP NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+    
+    // Таблица активных сессий
+    await pool.query(`
         CREATE TABLE IF NOT EXISTS active_sessions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             user_id INTEGER NOT NULL,
             token TEXT NOT NULL,
             device_info TEXT,
-            login_time DATETIME DEFAULT CURRENT_TIMESTAMP,
-            last_activity DATETIME DEFAULT CURRENT_TIMESTAMP
+            login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     `);
     
-    dbRun(`
-        CREATE TABLE IF NOT EXISTS sessions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            token TEXT NOT NULL,
-            expires_at DATETIME NOT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-    `);
-    
-    dbRun(`
+    // Таблица журнала дежурств
+    await pool.query(`
         CREATE TABLE IF NOT EXISTS journal_entries (
             id TEXT PRIMARY KEY,
             start_datetime TEXT NOT NULL,
@@ -128,11 +84,12 @@ async function initDatabase() {
             inspection_readings TEXT,
             shift_from TEXT,
             shift_to TEXT,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     `);
     
-    dbRun(`
+    // Таблица дней рождения
+    await pool.query(`
         CREATE TABLE IF NOT EXISTS birthdays (
             id TEXT PRIMARY KEY,
             name TEXT NOT NULL,
@@ -140,24 +97,24 @@ async function initDatabase() {
             position TEXT,
             department TEXT,
             created_at TEXT NOT NULL,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     `);
     
     // Создаём пользователей
     const users = [
-        { username: 'master', password: 'master123', full_name: 'Мастер', role: 'master' },
-        { username: 'operator', password: 'operator123', full_name: 'Инженер-энергетик', role: 'operator' },
-        { username: 'viewer', password: 'viewer123', full_name: 'Только просмотр', role: 'viewer' }
+        { username: 'master', password: 'master123', full_name: 'Мастер', role: 'master', is_shared: 0 },
+        { username: 'operator', password: 'operator123', full_name: 'Инженер-энергетик', role: 'operator', is_shared: 0 },
+        { username: 'viewer', password: 'viewer123', full_name: 'Только просмотр', role: 'viewer', is_shared: 0 }
     ];
     
     for (const user of users) {
-        const existing = dbGet('SELECT * FROM users WHERE username = ?', [user.username]);
-        if (!existing) {
+        const existing = await pool.query('SELECT * FROM users WHERE username = $1', [user.username]);
+        if (existing.rows.length === 0) {
             const hashedPassword = bcrypt.hashSync(user.password, 10);
-            dbRun(
-                `INSERT INTO users (username, password, full_name, role, is_shared) VALUES (?, ?, ?, ?, ?)`,
-                [user.username, hashedPassword, user.full_name, user.role, 0]
+            await pool.query(
+                'INSERT INTO users (username, password, full_name, role, is_shared) VALUES ($1, $2, $3, $4, $5)',
+                [user.username, hashedPassword, user.full_name, user.role, user.is_shared]
             );
         }
     }
@@ -172,17 +129,19 @@ async function initDatabase() {
     ];
     
     for (const staff of shiftStaffList) {
-        const existing = dbGet('SELECT * FROM shift_staff WHERE name = ?', [staff.name]);
-        if (!existing) {
-            dbRun('INSERT INTO shift_staff (name, shift_name) VALUES (?, ?)', [staff.name, staff.shift_name]);
+        const existing = await pool.query('SELECT * FROM shift_staff WHERE name = $1', [staff.name]);
+        if (existing.rows.length === 0) {
+            await pool.query(
+                'INSERT INTO shift_staff (name, shift_name) VALUES ($1, $2)',
+                [staff.name, staff.shift_name]
+            );
         }
     }
     
-    console.log('✅ База данных инициализирована');
+    console.log('✅ База данных PostgreSQL инициализирована');
 }
 
 // ========== MIDDLEWARE ==========
-
 async function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -195,13 +154,12 @@ async function authenticateToken(req, res, next) {
         const user = jwt.verify(token, JWT_SECRET);
         req.user = user;
         
-        const activeSession = dbGet('SELECT * FROM active_sessions WHERE token = ?', [token]);
-        if (!activeSession) {
+        const activeSession = await pool.query('SELECT * FROM active_sessions WHERE token = $1', [token]);
+        if (activeSession.rows.length === 0) {
             return res.status(401).json({ error: 'Сессия завершена' });
         }
         
-        dbRun('UPDATE active_sessions SET last_activity = CURRENT_TIMESTAMP WHERE token = ?', [token]);
-        
+        await pool.query('UPDATE active_sessions SET last_activity = NOW() WHERE token = $1', [token]);
         next();
     } catch (error) {
         return res.status(403).json({ error: 'Недействительный токен' });
@@ -223,7 +181,6 @@ function canEditBirthdays(req, res, next) {
 }
 
 // ========== API ==========
-
 app.post('/api/login', async (req, res) => {
     const { username, password, shiftStaffId, rememberMe } = req.body;
     
@@ -231,21 +188,21 @@ app.post('/api/login', async (req, res) => {
         return res.status(400).json({ error: 'Введите логин и пароль' });
     }
     
-    const user = dbGet('SELECT * FROM users WHERE username = ?', [username]);
-    
-    if (!user) {
+    const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+    if (result.rows.length === 0) {
         return res.status(401).json({ error: 'Неверный логин или пароль' });
     }
     
+    const user = result.rows[0];
     const isValidPassword = bcrypt.compareSync(password, user.password);
     if (!isValidPassword) {
         return res.status(401).json({ error: 'Неверный логин или пароль' });
     }
     
     if (user.role === 'operator') {
-        const activeSession = dbGet('SELECT * FROM active_sessions WHERE user_id = ?', [user.id]);
-        if (activeSession) {
-            return res.status(403).json({ error: 'Учётная запись уже используется на другом устройстве. Выйдите там.' });
+        const activeSession = await pool.query('SELECT * FROM active_sessions WHERE user_id = $1', [user.id]);
+        if (activeSession.rows.length > 0) {
+            return res.status(403).json({ error: 'Учётная запись уже используется на другом устройстве.' });
         }
     }
     
@@ -254,10 +211,11 @@ app.post('/api/login', async (req, res) => {
         if (!shiftStaffId) {
             return res.status(400).json({ error: 'Выберите сменного сотрудника', needShiftStaff: true });
         }
-        selectedStaff = dbGet('SELECT * FROM shift_staff WHERE id = ?', [shiftStaffId]);
-        if (!selectedStaff) {
+        const staffResult = await pool.query('SELECT * FROM shift_staff WHERE id = $1', [shiftStaffId]);
+        if (staffResult.rows.length === 0) {
             return res.status(400).json({ error: 'Неверный выбор сотрудника' });
         }
+        selectedStaff = staffResult.rows[0];
     }
     
     const expiresIn = rememberMe ? '30d' : '24h';
@@ -277,12 +235,8 @@ app.post('/api/login', async (req, res) => {
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + (rememberMe ? 720 : 24));
     
-    dbRun('INSERT INTO sessions (user_id, token, expires_at) VALUES (?, ?, ?)', 
-        [user.id, token, expiresAt.toISOString()]);
-    
-    const deviceInfo = req.headers['user-agent'] || 'неизвестно';
-    dbRun('INSERT INTO active_sessions (user_id, token, device_info) VALUES (?, ?, ?)',
-        [user.id, token, deviceInfo]);
+    await pool.query('INSERT INTO sessions (user_id, token, expires_at) VALUES ($1, $2, $3)', [user.id, token, expiresAt]);
+    await pool.query('INSERT INTO active_sessions (user_id, token, device_info) VALUES ($1, $2, $3)', [user.id, token, req.headers['user-agent'] || 'неизвестно']);
     
     res.json({
         success: true,
@@ -302,9 +256,8 @@ app.post('/api/logout', authenticateToken, async (req, res) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader.split(' ')[1];
     
-    dbRun('DELETE FROM active_sessions WHERE token = ?', [token]);
-    dbRun('DELETE FROM sessions WHERE token = ?', [token]);
-    
+    await pool.query('DELETE FROM active_sessions WHERE token = $1', [token]);
+    await pool.query('DELETE FROM sessions WHERE token = $1', [token]);
     res.json({ success: true });
 });
 
@@ -313,55 +266,55 @@ app.get('/api/me', authenticateToken, (req, res) => {
 });
 
 app.get('/api/shift-staff', async (req, res) => {
-    const staff = dbQuery('SELECT id, name, shift_name FROM shift_staff WHERE is_active = 1');
-    res.json(staff);
+    const result = await pool.query('SELECT id, name, shift_name FROM shift_staff WHERE is_active = 1');
+    res.json(result.rows);
 });
 
 app.get('/api/journal', authenticateToken, async (req, res) => {
-    const entries = await db.prepare('SELECT * FROM journal_entries ORDER BY end_datetime DESC').all();
-    res.json(entries);
+    const result = await pool.query('SELECT * FROM journal_entries ORDER BY end_datetime DESC');
+    res.json(result.rows);
 });
 
 app.post('/api/journal', authenticateToken, canWriteJournal, async (req, res) => {
     const { id, startDatetime, endDatetime, eventText, staffName, eventType, inspectionReadings, shiftFrom, shiftTo } = req.body;
     
-    dbRun(`
-        INSERT INTO journal_entries 
-        (id, start_datetime, end_datetime, event_text, staff_name, event_type, inspection_readings, shift_from, shift_to)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `, [id, startDatetime, endDatetime, eventText, staffName, eventType, JSON.stringify(inspectionReadings), shiftFrom, shiftTo]);
+    await pool.query(
+        `INSERT INTO journal_entries 
+         (id, start_datetime, end_datetime, event_text, staff_name, event_type, inspection_readings, shift_from, shift_to)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        [id, startDatetime, endDatetime, eventText, staffName, eventType, JSON.stringify(inspectionReadings), shiftFrom, shiftTo]
+    );
     
     res.json({ success: true, id });
 });
 
 app.delete('/api/journal/:id', authenticateToken, canWriteJournal, async (req, res) => {
-    dbRun('DELETE FROM journal_entries WHERE id = ?', [req.params.id]);
+    await pool.query('DELETE FROM journal_entries WHERE id = $1', [req.params.id]);
     res.json({ success: true });
 });
 
 app.get('/api/birthdays', authenticateToken, async (req, res) => {
-    const birthdays = dbQuery('SELECT * FROM birthdays');
-    res.json(birthdays);
+    const result = await pool.query('SELECT * FROM birthdays');
+    res.json(result.rows);
 });
 
 app.post('/api/birthdays', authenticateToken, canEditBirthdays, async (req, res) => {
     const { id, name, birthDate, position, department, createdAt } = req.body;
-    dbRun(`
-        INSERT INTO birthdays (id, name, birth_date, position, department, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-    `, [id, name, birthDate, position, department, createdAt || new Date().toISOString()]);
-    
+    await pool.query(
+        'INSERT INTO birthdays (id, name, birth_date, position, department, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+        [id, name, birthDate, position, department, createdAt || new Date().toISOString(), new Date()]
+    );
     res.json({ success: true, id });
 });
 
 app.delete('/api/birthdays/:id', authenticateToken, canEditBirthdays, async (req, res) => {
-    dbRun('DELETE FROM birthdays WHERE id = ?', [req.params.id]);
+    await pool.query('DELETE FROM birthdays WHERE id = $1', [req.params.id]);
     res.json({ success: true });
 });
 
 app.get('/api/users', async (req, res) => {
-    const users = dbQuery('SELECT id, username, full_name, role, is_shared FROM users');
-    res.json(users);
+    const result = await pool.query('SELECT id, username, full_name, role, is_shared FROM users');
+    res.json(result.rows);
 });
 
 // ========== ЗАПУСК ==========
@@ -369,7 +322,7 @@ initDatabase().then(() => {
     app.listen(PORT, HOST, () => {
         console.log(`\n🚀 Сервер запущен на http://${HOST}:${PORT}`);
         console.log(`👥 Пользователи: master/master123, operator/operator123, viewer/viewer123`);
-        console.log(`💾 База данных: ${DB_PATH}\n`);
+        console.log(`🔒 Оператор может войти только с одного устройства\n`);
     });
 }).catch(err => {
     console.error('Ошибка инициализации БД:', err);
